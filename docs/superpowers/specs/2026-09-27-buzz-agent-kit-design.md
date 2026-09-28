@@ -3,6 +3,7 @@
 - **Date:** 2026-09-27
 - **Status:** awaiting review
 - **Repo:** `github.com/brklyn8900/buzz-agent-kit` (public)
+- **Change 2026-09-27 (approved by Ron):** the CI notifier's default is now a Buzz **webhook workflow**; the bot-key mode becomes an option (§6 `ci-bot init`, §8, §10, §12 item 5, §14). Verified live on a Buzz server before the change.
 
 ## 1. Purpose
 
@@ -211,7 +212,7 @@ Global flags: `--as <assistant>`, `--relay <url>`, `--json` (machine output), `-
 | `read [--limit N] [--thread <id>]` | Channel messages or a thread, via `buzz messages get` / `thread`. |
 | `search <query> [--author <x>]` | `buzz messages search`. |
 | `as <name> -- <buzz args…>` | **Read-only passthrough** to Block's CLI with the key injected. Only an **allowlist** of subcommands runs: `channels list\|get\|search\|members`, `messages get\|thread\|search`, `users get\|presence`, `canvas get\|history`, `repos get\|list`, `feed get`, `dms list`. **Everything else is refused**, including every subcommand that writes, uploads, deletes or edits (e.g. `messages send\|edit\|delete`, `upload`, `canvas set`, `social publish`, `users set-profile`), with an error naming the guarded command to use instead. Any `--broadcast` argument is also refused. |
-| `ci-bot init [--name <n>] [--repo <owner/repo>]` | Creates the bot key, runs `gh secret set BUZZ_CI_KEY` **with the key on stdin**, runs `gh variable set` for `BUZZ_RELAY_URL` and `BUZZ_CHANNEL_ID`, writes `.github/workflows/buzz-notify.yml` from the template, and prints the operator and channel-owner steps (member, then add to the channel with role `bot`). Offers to delete the local key afterwards. |
+| `ci-bot init [--mode webhook\|bot-key] [--repo <owner/repo>] [--name <n>]` | **`webhook` (default):** as the active assistant, creates a Buzz workflow in the project channel with `trigger: on: webhook` and one `send_message` step using a fixed template (§10). Runs `gh secret set BUZZ_WEBHOOK_SECRET` **with the secret on stdin** and `gh variable set BUZZ_WEBHOOK_URL` (`<relay https base>/hooks/<workflow_id>`), then writes `.github/workflows/buzz-notify.yml` from the webhook template. **Never prints the secret.** Block's CLI returns it nested inside the JSON `message` string (`"response:{\"webhook_secret\":…,\"workflow_id\":…}"`), so parse that and redact any echo. No bot key, no membership step. **`bot-key`:** the original mode, for teams that want a named CI author: creates the bot key, runs `gh secret set BUZZ_CI_KEY` with the key on stdin, runs `gh variable set` for `BUZZ_RELAY_URL` and `BUZZ_CHANNEL_ID`, writes the bot-key template, and prints the operator and channel-owner steps (member, then add to the channel with role `bot`). Offers to delete the local key afterwards. |
 | `install-buzz-cli` | Linux: downloads Block's desktop `.deb` for the pinned version, **verifies its SHA-256 against a pinned value in the binary**, extracts `usr/bin/buzz` to `~/.local/share/buzz-kit/buzz-cli/<ver>/buzz`. macOS: checks `/Applications/Buzz.app/Contents/MacOS/buzz`. |
 | `bootstrap` | Launcher subcommand (§5.3): verify, install `current`, write the shim. |
 | `update [--to <version>]` | §5.3: run the newest installed plugin's launcher bootstrap, or roll back. |
@@ -260,7 +261,8 @@ Global flags: `--as <assistant>`, `--relay <url>`, `--json` (machine output), `-
 
 **Hard rules in code**
 - The keystore refuses the service names `buzz-desktop` and `buzz-desktop-*` (Buzz Desktop's own secrets entry, which holds the user's identity key).
-- **No command prints a private key.** The only export path is `ci-bot init`, piping to `gh secret set`.
+- **No command prints a private key.** The only export path is `ci-bot init --mode bot-key`, piping to `gh secret set`.
+- **Webhook secrets get the same treatment:** they go only to `gh secret set` on stdin and are never printed or written to disk.
 - The key reaches Block's CLI only as `BUZZ_PRIVATE_KEY` in the child process's environment.
 - The secret buffer is zeroed after use (`zeroize`, if the dependency review allows; otherwise a manual overwrite).
 
@@ -326,7 +328,12 @@ Both skills follow the **agentskills.io** spec: `name` matches the folder (≤ 6
 
 - `templates/buzz.config.example.json` (§7).
 - `templates/AGENTS.snippet.md`: channel pointer, "follow the buzz-kit room skill", and "if buzz-kit isn't installed, don't try to post".
-- `templates/github/buzz-notify.yml`: the workflow from the koinosbuzz playbook. **It uses Block's CLI from the checksum-pinned `.deb`**, no third-party actions, `permissions: {}`, event data passed only through `env:`. It posts PR opened, reopened, ready-for-review, merged and closed; issues opened and closed; releases published; and CI failures. `ci-bot init` fills in the CI workflow name.
+- `templates/github/buzz-notify.yml` (**webhook mode, the default**): one `curl` step to `${{ vars.BUZZ_WEBHOOK_URL }}` with header `x-webhook-secret: ${{ secrets.BUZZ_WEBHOOK_SECRET }}`. It downloads nothing and uses no third-party actions. `permissions: {}`, event data passed only through `env:`, and the JSON body built with `jq -n --arg …` (preinstalled on GitHub runners), never string interpolation. It uses `curl --fail-with-body`. It posts the same events as before: PR opened, reopened, ready-for-review, merged and closed; issues opened and closed; releases published; and CI failures. `ci-bot init` fills in the CI workflow name.
+  - **The body must be flat JSON.** Only top-level fields resolve in `{{trigger.X}}`; a nested path like `{{trigger.pull_request.number}}` stays literal. The body carries `repo`, `event`, `title`, `url` and `actor`.
+  - **The Buzz workflow's template is fixed:** `[{{trigger.repo}}] {{trigger.event}}: {{trigger.title}} ({{trigger.actor}}) {{trigger.url}}`. A caller holding the secret can fill in fields but can't post free-form messages.
+  - **Properties, verified live on a Buzz server:** a valid secret gets 202 and the message posts within seconds; a wrong secret gets 401 and nothing posts; after the workflow is deleted, calls get 404. Posts are authored by the **relay's own key**, not a named bot. Runs execute with the workflow owner's authority and fail closed (404) if the owner loses channel membership, so the assistant that ran `ci-bot init` must stay in the channel. `doctor` should warn if it can't see the workflow.
+  - GitHub's built-in repository webhooks are **not** supported: their payloads are nested, and they can't set the secret header (the `?secret=` query fallback would leak the secret into logs).
+- `templates/github/buzz-notify.bot-key.yml` (bot-key mode): the workflow from the koinosbuzz playbook. **It uses Block's CLI from the checksum-pinned `.deb`**, with the same event list and the same hardening.
 - `docs/collaboration.md`: the generalized playbook.
 - `docs/operators.md`, for server operators:
   - adding assistant and bot pubkeys as members
@@ -415,7 +422,7 @@ Both skills follow the **agentskills.io** spec: `name` matches the folder (≤ 6
      `doctor` is all green for c3po (Claude) and r2d2 (Codex).
   3. Post a claim plus a threaded update to a test thread on `buzz.example.com`; verify author and threading on the server.
   4. Linux headless: file-store path, `install-buzz-cli`, `doctor`, all in a throwaway `$HOME` on a Linux box, with nothing touching the running Buzz.
-  5. A test repo with `buzz-notify.yml` posts PR opened and merged messages.
+  5. A test repo with the default (webhook) `buzz-notify.yml` posts PR opened and merged messages; a request with a wrong secret is rejected. Bot-key mode gets the same PR-opened check once.
   6. **Teammate path:** a fresh clone of a test project with the committed `.claude/settings.json`:
      - **Claude Code:** open it, accept workspace trust, and get prompted to install buzz-kit at the pinned tag.
      - **VS Code / Copilot:** open it; the recommendation appears **when the first chat message is sent** (per VS Code docs), not on open.
@@ -445,3 +452,4 @@ Both skills follow the **agentskills.io** spec: `name` matches the folder (≤ 6
 - Whether Codex puts a plugin's `bin/` on PATH (docs say no; the shim covers it either way) (M0).
 - Whether Codex's `policy.installation: "INSTALLED_BY_DEFAULT"` auto-installs from a repo marketplace (unverified; v1 doesn't rely on it) (M0).
 - Whether a `.claude/settings.json` marketplace entry pinned with `ref` is honored for teammate prompts (M4 acceptance item 6).
+- Webhook mode (M3): whether `buzz workflows update` rotates the secret (the relay's error text says re-saving generates one), which would give us `ci-bot rotate`; and how Buzz Desktop displays relay-authored posts. Put that in `docs/operators.md` so teams can choose a mode.

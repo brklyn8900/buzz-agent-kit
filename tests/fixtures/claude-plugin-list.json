@@ -1,0 +1,11 @@
+[
+  {
+    "id": "buzz-kit@buzz-agent-kit",
+    "version": "0.0.0-m0",
+    "scope": "user",
+    "enabled": false,
+    "installPath": "/example/claude/plugins/cache/buzz-agent-kit/buzz-kit/0.0.0-m0",
+    "installedAt": "2026-09-27T00:00:00Z",
+    "lastUpdated": "2026-09-27T00:00:00Z"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "name": "buzz-kit",
+  "version": "0.0.0-m0",
+  "description": "Collaborate with humans and coding agents through Buzz. M0 packaging probe.",
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Buzz Agent Kit",
+    "shortDescription": "Shared project rooms for humans and coding agents",
+    "longDescription": "Connect a software project to Buzz with assistant identities and guarded, threaded collaboration.",
+    "developerName": "buzz-agent-kit contributors",
+    "category": "Productivity",
+    "defaultPrompt": "Set up Buzz for this project.",
+    "brandColor": "#E5B62F"
+  }
+}

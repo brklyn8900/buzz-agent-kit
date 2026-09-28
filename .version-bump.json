@@ -1,0 +1,8 @@
+{
+  "canonical": { "file": ".claude-plugin/plugin.json", "field": "version" },
+  "files": [
+    { "file": ".claude-plugin/plugin.json", "field": "version" },
+    { "file": "plugin.json", "field": "version" },
+    { "file": ".claude-plugin/marketplace.json", "field": "plugins.0.version" }
+  ]
+}

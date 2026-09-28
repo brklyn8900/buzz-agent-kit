@@ -1,0 +1,12 @@
+#!/bin/sh
+# Deliberately not the Rust implementation or a production readiness check.
+set -eu
+case "${1:-}" in
+    doctor)
+        printf 'M0 development stub: launcher and argument dispatch work.\n'
+        printf 'Production doctor checks are not implemented; no server or keystore accessed.\n'
+        ;;
+    --version) printf 'buzz-kit 0.0.0-m0 (development stub)\n' ;;
+    probe) shift; printf 'argument: <%s>\n' "$@" ;;
+    *) printf 'M0 development stub supports only doctor, --version, and probe.\n' >&2; exit 2 ;;
+esac

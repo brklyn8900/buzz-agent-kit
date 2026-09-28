@@ -1,0 +1,13 @@
+{
+  "name": "buzz-agent-kit",
+  "description": "Buzz collaboration tools for humans and coding agents.",
+  "owner": { "name": "buzz-agent-kit contributors" },
+  "plugins": [
+    {
+      "name": "buzz-kit",
+      "source": "./",
+      "version": "0.0.0-m0",
+      "description": "Collaborate through Buzz with your coding agents."
+    }
+  ]
+}

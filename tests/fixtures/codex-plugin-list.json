@@ -1,0 +1,19 @@
+{
+  "installed": [
+    {
+      "pluginId": "buzz-kit@buzz-agent-kit",
+      "name": "buzz-kit",
+      "marketplaceName": "buzz-agent-kit",
+      "version": "0.0.0-m0",
+      "installed": true,
+      "enabled": true,
+      "source": {
+        "source": "local",
+        "path": "./"
+      },
+      "installPolicy": "AVAILABLE",
+      "authPolicy": "ON_INSTALL"
+    }
+  ],
+  "available": []
+}

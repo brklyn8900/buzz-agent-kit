@@ -1,0 +1,8 @@
+[
+  {
+    "name": "buzz-agent-kit",
+    "source": "github",
+    "repo": "brklyn8900/buzz-agent-kit",
+    "installLocation": "/example/claude/plugins/marketplaces/buzz-agent-kit"
+  }
+]

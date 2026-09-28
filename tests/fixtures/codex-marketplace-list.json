@@ -1,0 +1,16 @@
+{
+  "marketplaces": [
+    {
+      "name": "buzz-agent-kit",
+      "root": "/example/codex/plugins/marketplaces/buzz-agent-kit",
+      "marketplaceSource": {
+        "sourceType": "git",
+        "source": "https://github.com/brklyn8900/buzz-agent-kit.git"
+      }
+    },
+    {
+      "name": "example-without-source",
+      "root": "/example/codex/marketplaces/example-without-source"
+    }
+  ]
+}

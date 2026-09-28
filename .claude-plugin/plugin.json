@@ -1,0 +1,8 @@
+{
+  "name": "buzz-kit",
+  "version": "0.0.0-m0",
+  "description": "Collaborate with humans and coding agents through Buzz. M0 packaging probe.",
+  "author": { "name": "buzz-agent-kit contributors" },
+  "license": "Apache-2.0",
+  "skills": "./skills/"
+}

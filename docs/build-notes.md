@@ -240,3 +240,10 @@ Read Ron-approved spec commit `0e44110` after the M2.3 live task. Updated M3.2 f
 ### M2 exit — PASS (2026-09-27)
 
 All local guards, allowlists, payload, settings merge, bootstrap, update and installer tests pass. M2.3 records the real scratch-thread claim/reply author and parent verification. M0/M1/M2 are complete; M3 begins with the approved webhook default. Release acceptance and publication remain open.
+
+## M3.1 — shared setup/room skills and generic documentation (complete, 2026-09-27)
+
+- Packaging check first failed on M0's placeholder root-token text. Both skills now have valid bounded frontmatter, no root-token substitution, and preserved no-hook/no-MCP manifests. `python3 tests/skills.py` and version checks pass. This is packaging validation; fresh-host behavior remains M3.3.
+- Setup follows doctor, human invite, per-runtime identity, operator enrollment, profile, personal config, channel init, agent snippet and optional webhook-default CI. Room defines ask/status/off, untrusted-channel authority, one claim/thread, five message templates, text-only and size/secret restrictions.
+- Added generic collaboration/operator guides, manual tagged installation and skills-only fallback limitations, privacy guidance and official Apache-2.0 license text. Operator docs explicitly leave webhook rotation/display verification pending rather than inventing results. Read the version-matched upstream iOS gateway guide; linked its constrained app-profile prerequisites instead of promising universal push support.
+- Ruling: prose validation is proportionate packaging/content review per AGENTS.md; no artificial agent-pressure ceremony for these documentation edits. Real Claude/Codex walkthroughs remain mandatory. No actual relay address, channel identifier, identity key or webhook secret is in these artifacts.

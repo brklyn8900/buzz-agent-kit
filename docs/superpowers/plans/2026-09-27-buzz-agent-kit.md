@@ -203,11 +203,11 @@ Files: `src/install_buzz.rs`, artifact dependency-log entry and tests.
 
 Files: both skills, `templates/{buzz.config.example.json,AGENTS.snippet.md}`, `docs/{collaboration,operators}.md`, README, LICENSE.
 
-- [ ] Write frontmatter/packaging checks for name/folder/length and forbidden hook/MCP references. Check templates contain only generic values.
-- [ ] Replace M0 placeholder with setup's ordered doctor/fix flow, public identity handoff, profile, runtime config, init, channel display-name/hex guidance and optional webhook-default CI notification setup (bot-key is an explicit alternative). Never request a private key or webhook secret pasted into chat.
-- [ ] Implement room skill with untrusted-channel boundary, read/search/claim/thread/change-only updates, ask/status/off, five templates, no attachments, no broadcast and size limits.
-- [ ] Document all operator caveats from §10; manual pinned installs and DO_NOT_TRACK=1 skills-only fallback limitations; Apache-2.0 license.
-- [ ] Validate manifests/skills and inspect rendered docs; commit `docs: add setup room and operator workflows`.
+- [x] Write frontmatter/packaging checks for name/folder/length and forbidden hook/MCP references. Check templates contain only generic values.
+- [x] Replace M0 placeholder with setup's ordered doctor/fix flow, public identity handoff, profile, runtime config, init, channel display-name/hex guidance and optional webhook-default CI notification setup (bot-key is an explicit alternative). Never request a private key or webhook secret pasted into chat.
+- [x] Implement room skill with untrusted-channel boundary, read/search/claim/thread/change-only updates, ask/status/off, five templates, no attachments, no broadcast and size limits.
+- [x] Document all operator caveats from §10; manual pinned installs and DO_NOT_TRACK=1 skills-only fallback limitations; Apache-2.0 license.
+- [x] Validate manifests/skills and inspect rendered docs; commit `docs: add setup room and operator workflows`.
 
 ### M3.2: Webhook-default CI initialization and optional bot-key mode
 

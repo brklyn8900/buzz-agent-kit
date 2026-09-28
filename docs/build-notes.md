@@ -114,4 +114,11 @@ Plan updates before M1: detect Codex using CODEX_THREAD_ID; preserve strict opti
 - This supersedes the earlier pending source-cleanup proposal. Original commits remain private in the existing local repository; publication must use a separate clean snapshot, never push the original history.
 - No public repo, remote, tag or release was created. Repo creation/first push/tag approvals remain pending.
 
-All nine M4 items are **NOT RUN**. No milestone exit has passed. Local packaging validation or a development stub does not count as production, live-server, fresh-user, or published-release evidence.
+All nine M4 items remain **NOT RUN** as production acceptance. **M0 passed**; its development-stub proof does not replace production, live-server, fresh-user, or release-artifact evidence.
+
+## M1.1 — dependency approval preparation
+
+- Aligned the working master with the public sanitized history. Original local task history is retained under a private Git ref and in a verified private Git bundle; it is not an ancestor of public master. Future pushes must explicitly name master or an individually approved tag, never private refs.
+- Prepared `docs/security/dependency-log.md` and `dependency-proposal-2026-09-27.json`: ten exact direct versions, 47 transitives, checksums, sources, owners, activity, feature choices, build-script exceptions and explicit unresolved review limitations.
+- Resolver-only metadata review used existing Cargo; no project Cargo manifest added, no build scripts/macros executed, no dependency installed as a tool. Registry archive hashes matched for all 57 packages; OSV returned zero advisory matches and no pending pages.
+- Stop at the user-requested dependency gate. Implementation of M1 starts after Ron approves this concrete batch. cargo-dist, audit/deny tools, Actions and Linux Buzz binaries remain separate future dependency proposals.

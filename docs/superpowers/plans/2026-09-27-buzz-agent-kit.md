@@ -94,10 +94,10 @@ Files: `docs/build-notes.md`; temporary probe workspaces outside published conte
 
 Files: `docs/security/dependency-log.md`, `Cargo.toml`, `Cargo.lock`, `rust-toolchain.toml`, `crates/buzz-kit/{Cargo.toml,src/main.rs,src/cli.rs,src/config.rs}`.
 
-- [ ] Vet each proposed direct crate from §11 at an exact version and its dependency graph; record unresolved ownership/behavior signals honestly. Obtain Ron's approval before adding any crate or toolchain download.
-- [ ] Write tests for flags > env > project > personal; invalid JSON/enums; missing optional project; explicit config path; relay normalization; runtime mapping > sole assistant fallback; ambiguous choices. Run `cargo test --locked`; expect assertion failures.
-- [ ] Implement typed parsing/config resolution and runtime marker behavior proven in M0. Use nonempty CODEX_THREAD_ID for Codex detection (M0 verified). Keep secrets out of configuration and errors. Add canonical version checks including Cargo.
-- [ ] Run `cargo test --locked` and `cargo build --locked`; commit `feat: add CLI and configuration resolution`.
+- [x] Vet each proposed direct crate from §11 at an exact version and its dependency graph; record unresolved ownership/behavior signals honestly. Obtain Ron's approval before adding any crate or toolchain download.
+- [x] Write tests for flags > env > project > personal; invalid JSON/enums; missing optional project; explicit config path; relay normalization; runtime mapping > sole assistant fallback; ambiguous choices. Run `cargo test --locked`; expect assertion failures.
+- [x] Implement typed parsing/config resolution and runtime marker behavior proven in M0. Use nonempty CODEX_THREAD_ID for Codex detection (M0 verified). Keep secrets out of configuration and errors. Add canonical version checks including Cargo.
+- [x] Run `cargo test --locked` and `cargo build --locked`; commit `feat: add CLI and configuration resolution`.
 
 ### M1.2: Keystore backends and safe subprocess handling
 

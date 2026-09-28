@@ -1,7 +1,7 @@
 {
   "review_date": "2026-09-27",
-  "status": "proposed-awaiting-Ron-approval",
-  "scope": "10 direct crates and 47 transitive packages; no crate built",
+  "status": "approved-by-Ron-2026-09-27",
+  "scope": "10 direct crates and 47 transitive packages; approved for compilation",
   "registry_packages": [
     {
       "name": "aho-corasick",

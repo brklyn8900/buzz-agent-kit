@@ -2,7 +2,7 @@
 
 ## Policy (2026-09-27)
 
-Apply the local supply-chain-hardening playbook and spec §11 before adding any crate, Action, or tool. Obtain Ron's explicit approval for each concrete version/revision before adding it. No dependencies have been added or approved during implementation.
+Apply the local supply-chain-hardening playbook and spec §11 before adding any crate, Action, or tool. Obtain Ron's explicit approval for each concrete version/revision before adding it. Ron approved the exact Rust batch below on 2026-09-27. Other dependencies remain gated.
 
 For each proposal record: purpose and why a small local implementation is insufficient; official registry/source and exact version/hash; downloads; maintainer count and ownership-transfer evidence over the last 90 days; release/source activity; advisory and behavioral scan; build/install scripts; transitive count and noteworthy behavior; license; reviewer; approval and residual uncertainties. An unavailable signal stays unknown, never becomes a pass.
 
@@ -12,7 +12,7 @@ Uses already installed host CLIs and system utilities only; no third-party packa
 
 `cargo-dist` and `shellcheck` are absent. Their installation is deferred until vetted and approved. Planned §11 crates, cargo-audit, cargo-deny, Actions and the Linux Buzz artifact are not yet vetted or approved.
 
-## Proposed M1–M2 Rust batch — awaiting Ron approval
+## Approved M1–M2 Rust batch
 
 Review date: 2026-09-27. Reviewer: Codex. Decision: recommend this exact batch, with the limitations below explicitly accepted. Nothing has been added to the kit Cargo manifests or compiled. No extra tool, Action, CI bot, persistent Keychain write, or release is authorized by this proposal.
 
@@ -55,7 +55,7 @@ A temporary resolver-only manifest used the existing Cargo 1.89.0 to resolve and
 - Nine archives carry VCS commits which resolve in their declared upstream repositories. bech32 uses the separately verified official release tag. Recent direct-release histories were inspected; no five-patches-in-a-week pattern appears among the latest stable releases reviewed.
 - Allowed license choices in the resolved set are MIT, Apache-2.0, BSD-3-Clause and Unicode-3.0 as applicable; use the permissive branch of multi-license choices. No LGPL option is required.
 
-### Proposed build-script exceptions (approval required)
+### Approved build-script exceptions
 
 | Exact crate | Reviewed behavior |
 |---|---|
@@ -79,4 +79,4 @@ Build-script code hashes are in the proposal JSON. The procedural macros `clap_d
 - **Behavioral scan:** current-version Socket coverage is not verified. The alternative performed here is targeted manual build-script review plus capability scanning and OSV checks; full independent assurance is not claimed.
 - **No build proof yet:** source/metadata resolution succeeded, but compilation waits for approval. Any required dependency change discovered during build returns through this gate.
 
-Approval requested: all ten exact direct pins, the 47 exact transitive entries, the listed build-script/procedural-macro exceptions, and the stated review limitations. Approval remains **pending**.
+Approval requested: all ten exact direct pins, the 47 exact transitive entries, the listed build-script/procedural-macro exceptions, and the stated review limitations. **Approved by Ron on 2026-09-27**, including the exact graph, compiler inputs and stated limitations. This approval permits compilation of this batch. Other tools, Actions, dependency changes and releases remain separate gates.

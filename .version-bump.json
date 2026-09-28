@@ -1,8 +1,25 @@
 {
-  "canonical": { "file": ".claude-plugin/plugin.json", "field": "version" },
+  "canonical": {
+    "file": ".claude-plugin/plugin.json",
+    "field": "version"
+  },
   "files": [
-    { "file": ".claude-plugin/plugin.json", "field": "version" },
-    { "file": "plugin.json", "field": "version" },
-    { "file": ".claude-plugin/marketplace.json", "field": "plugins.0.version" }
+    {
+      "file": ".claude-plugin/plugin.json",
+      "field": "version"
+    },
+    {
+      "file": "plugin.json",
+      "field": "version"
+    },
+    {
+      "file": ".claude-plugin/marketplace.json",
+      "field": "plugins.0.version"
+    },
+    {
+      "file": "crates/buzz-kit/Cargo.toml",
+      "field": "package.version",
+      "format": "toml"
+    }
   ]
 }

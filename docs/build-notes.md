@@ -122,3 +122,11 @@ All nine M4 items remain **NOT RUN** as production acceptance. **M0 passed**; it
 - Prepared `docs/security/dependency-log.md` and `dependency-proposal-2026-09-27.json`: ten exact direct versions, 47 transitives, checksums, sources, owners, activity, feature choices, build-script exceptions and explicit unresolved review limitations.
 - Resolver-only metadata review used existing Cargo; no project Cargo manifest added, no build scripts/macros executed, no dependency installed as a tool. Registry archive hashes matched for all 57 packages; OSV returned zero advisory matches and no pending pages.
 - Stop at the user-requested dependency gate. Implementation of M1 starts after Ron approves this concrete batch. cargo-dist, audit/deny tools, Actions and Linux Buzz binaries remain separate future dependency proposals.
+
+## M1.1 — CLI and configuration (complete, 2026-09-27)
+
+- Ron approved the exact 10-direct/47-transitive Rust batch, reviewed compiler inputs and stated vetting limitations. Added only that graph, pinned Rust 1.89.0 already present on this Mac, and checked all 57 lock versions/checksums against the approved JSON.
+- Red: `cargo test --locked --test config` reported `0 passed; 5 failed`, each at its unimplemented config operation. Green: five config tests plus the CLI flag test pass. `cargo build --locked` passes. `scripts/check-version` prints `Versions agree: 0.0.0-m0`; M0 shell suite passes.
+- Implemented typed personal/project config, precedence, validated enums, credential-free relay normalization, and proven runtime marker selection. Invalid config errors do not echo input values. Conflicting runtime markers require an explicit identity.
+- Ruling: `--config` / `BUZZ_KIT_CONFIG` selects the project config; personal config stays at the specified per-human location. The spec leaves the selected file type unspecified; this keeps credentials and runtime preferences separate from project data. Discovery walks ancestors only to the Git boundary.
+- Added a Cargo workspace and developer-only version scripts using the Python 3 already used in M0. Version changes update the root package lock entry without resolving dependencies. The shipped plugin does not require Python. Production doctor remains explicitly unimplemented until M1.4; no false green status.

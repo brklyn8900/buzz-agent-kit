@@ -154,11 +154,11 @@ M1 CLI finding: `channels get` omits type. Use `channels search --query <exact n
 
 Files: `src/post.rs`, payload integration tests, build notes.
 
-- [ ] Write stdin-capture tests proving checked bytes equal sent bytes and no file path/--file argument reaches Buzz. Cover stream 9, forum root 45001/reply 45003, explicit kind, first split root, supplied thread root and later-part failure.
-- [ ] Implement post, preserving returned event IDs and surfacing partial-send information without automatic duplication/retry.
+- [x] Write stdin-capture tests proving checked bytes equal sent bytes and no file path/--file argument reaches Buzz. Cover stream 9, forum root 45001/reply 45003, explicit kind, first split root, supplied thread root and later-part failure.
+- [x] Implement post, preserving returned event IDs and surfacing partial-send information without automatic duplication/retry.
 - [ ] Ask Ron for a private scratch channel UUID and permission for required persistent assistant-key creation/import. Keep those inputs outside repo/logs. Verify membership before the first post.
 - [ ] Post a synthetic claim and reply only in the scratch thread; read back and verify public author and root/reply relationships. Record sanitized evidence, not channel UUID/server address or private content.
-- [ ] Run suite; commit `feat: add guarded threaded posting`.
+- [x] Run suite and commit guarded posting implementation; live gate remains pending.
 
 ### M2.4: Project init and merge-only teammate settings
 

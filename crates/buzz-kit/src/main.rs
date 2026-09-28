@@ -61,6 +61,61 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
     let config = config::load(home, &std::env::current_dir()?, &flags, &env)?;
     match &cli.command {
         Command::Doctor => unreachable!(),
+        Command::Post {
+            channel,
+            thread,
+            split,
+            kind,
+            file,
+        } => {
+            use std::io::Read;
+            anyhow::ensure!(file != "--broadcast", "broadcast is forbidden");
+            let name = config::active_assistant(&config, &env)?;
+            let store = keystore::open(config.backend, home)?;
+            let secret = store
+                .get(&name)?
+                .ok_or_else(|| anyhow::anyhow!("assistant key not found"))?;
+            let channel = channel
+                .clone()
+                .or_else(|| config.project.channel.as_ref().map(|c| c.id.clone()))
+                .ok_or_else(|| {
+                    anyhow::anyhow!("project channel is not configured; run init or pass --channel")
+                })?;
+            let mut bytes = zeroize::Zeroizing::new(Vec::new());
+            if file == "-" {
+                io::stdin()
+                    .read_to_end(&mut bytes)
+                    .map_err(|_| anyhow::anyhow!("cannot read message stdin"))?;
+            } else {
+                std::fs::File::open(file)
+                    .and_then(|mut f| f.read_to_end(&mut bytes))
+                    .map_err(|_| anyhow::anyhow!("cannot read message file"))?;
+            }
+            let request = buzz_kit::post::Request {
+                channel,
+                thread: thread.clone(),
+                split: *split,
+                kind: *kind,
+            };
+            let ids = buzz_kit::post::send(
+                &client(&config, &env, home)?,
+                store.as_ref(),
+                &secret,
+                &request,
+                &bytes,
+            )?;
+            if cli.json {
+                println!(
+                    "{}",
+                    serde_json::json!({"root":thread.as_ref().unwrap_or(&ids[0]),"event_ids":ids})
+                );
+            } else {
+                for id in ids {
+                    println!("{id}");
+                }
+            }
+            Ok(())
+        }
         Command::Assistant { command } => {
             let store = keystore::open(config.backend, home)?;
             match command {

@@ -5,6 +5,7 @@ use crate::{
 use anyhow::{Result, ensure};
 use serde::Deserialize;
 use std::{
+    io::Write,
     os::unix::fs::PermissionsExt,
     path::{Path, PathBuf},
     process::{Command, Stdio},
@@ -141,18 +142,45 @@ impl Buzz {
         Ok(response)
     }
     pub(crate) fn read_json(&self, args: &[&str], secret: &Secret) -> Result<serde_json::Value> {
+        self.execute(args, secret, None)
+    }
+    pub(crate) fn execute(
+        &self,
+        args: &[&str],
+        secret: &Secret,
+        input: Option<&[u8]>,
+    ) -> Result<serde_json::Value> {
         let relay = config::normalize_relay(&self.relay)?;
-        let output = Command::new(&self.executable)
+        let mut child = Command::new(&self.executable)
             .args(["--relay", &relay, "--format", "json"])
             .args(args)
             .env_remove("BUZZ_AUTH_TAG")
             .env_remove("BUZZ_RELAY_URL")
             .env("BUZZ_PRIVATE_KEY", secret.expose())
-            .stdin(Stdio::null())
+            .stdin(if input.is_some() {
+                Stdio::piped()
+            } else {
+                Stdio::null()
+            })
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
-            .output()
+            .spawn()
             .map_err(|_| anyhow::anyhow!("cannot run Buzz CLI"))?;
+        if let Some(bytes) = input {
+            let result = child
+                .stdin
+                .take()
+                .ok_or_else(|| anyhow::anyhow!("Buzz stdin unavailable"))?
+                .write_all(bytes);
+            if result.is_err() {
+                let _ = child.kill();
+                let _ = child.wait();
+                anyhow::bail!("Buzz stdin write failed; delivery may be uncertain");
+            }
+        }
+        let output = child
+            .wait_with_output()
+            .map_err(|_| anyhow::anyhow!("Buzz process failed; delivery may be uncertain"))?;
         let stdout = Zeroizing::new(output.stdout);
         let _stderr = Zeroizing::new(output.stderr);
         if !output.status.success() {

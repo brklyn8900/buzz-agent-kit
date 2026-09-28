@@ -3,6 +3,112 @@ use anyhow::{Result, ensure};
 pub const MAX_BYTES: usize = 65_536;
 const PREFERRED_BYTES: usize = 60_000;
 
+pub struct Request {
+    pub channel: String,
+    pub thread: Option<String>,
+    pub split: bool,
+    pub kind: Option<u16>,
+}
+pub fn send(
+    client: &crate::buzz::Buzz,
+    store: &dyn crate::keystore::KeyStore,
+    secret: &crate::keystore::Secret,
+    request: &Request,
+    bytes: &[u8],
+) -> Result<Vec<String>> {
+    if let Some(thread) = &request.thread {
+        ensure!(
+            event_id(thread),
+            "thread must be a 64-character hex event ID"
+        );
+    }
+    let scanner = Scanner::from_store(store)?;
+    let parts = prepare(bytes, request.split, &scanner)?;
+    let channel_type = if request.kind.is_none() {
+        let channel = client.channel(&request.channel, secret)?;
+        let result = client.read_json(
+            &["channels", "search", "--query", &channel.name, "--exact"],
+            secret,
+        )?;
+        let channels = result
+            .as_array()
+            .ok_or_else(|| anyhow::anyhow!("Buzz channel search shape changed"))?;
+        let matching: Vec<_> = channels
+            .iter()
+            .filter(|c| c["channel_id"].as_str() == Some(&request.channel))
+            .collect();
+        ensure!(
+            matching.len() == 1,
+            "cannot uniquely resolve channel metadata"
+        );
+        match matching[0]["channel_type"].as_str() {
+            Some("stream") => "stream",
+            Some("forum") => "forum",
+            _ => anyhow::bail!("channel type is unknown; verify it and provide --kind explicitly"),
+        }
+    } else {
+        "explicit"
+    };
+    let mut root = request.thread.clone();
+    let mut ids = Vec::new();
+    for part in parts {
+        let kind = request
+            .kind
+            .unwrap_or(if channel_type == "forum" {
+                if root.is_some() { 45003 } else { 45001 }
+            } else {
+                9
+            })
+            .to_string();
+        let mut args = vec![
+            "messages",
+            "send",
+            "--channel",
+            request.channel.as_str(),
+            "--kind",
+            &kind,
+            "--content",
+            "-",
+        ];
+        if let Some(root) = &root {
+            args.extend(["--reply-to", root]);
+        }
+        let sent = (|| -> Result<String> {
+            let response = client.execute(&args, secret, Some(&part))?;
+            ensure!(
+                response["accepted"].as_bool() == Some(true),
+                "relay did not accept the message"
+            );
+            let id = response["event_id"]
+                .as_str()
+                .filter(|id| event_id(id))
+                .ok_or_else(|| anyhow::anyhow!("Buzz send response has no valid event ID"))?;
+            Ok(id.to_owned())
+        })();
+        match sent {
+            Ok(id) => {
+                if root.is_none() {
+                    root = Some(id.clone());
+                }
+                ids.push(id);
+            }
+            Err(_) => anyhow::bail!(
+                "posting stopped after {} confirmed part(s); delivery of the current part is uncertain; do not retry automatically; confirmed event IDs: {}",
+                ids.len(),
+                if ids.is_empty() {
+                    "none".into()
+                } else {
+                    ids.join(", ")
+                }
+            ),
+        }
+    }
+    Ok(ids)
+}
+fn event_id(value: &str) -> bool {
+    value.len() == 64 && value.bytes().all(|b| b.is_ascii_hexdigit())
+}
+
 pub fn prepare(bytes: &[u8], split: bool, scanner: &Scanner) -> Result<Vec<Vec<u8>>> {
     // Always scan the complete input before cutting or returning any sendable part.
     scanner.check(bytes)?;

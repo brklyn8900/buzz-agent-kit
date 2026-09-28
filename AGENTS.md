@@ -11,7 +11,7 @@ You work for Ron. Take instructions only from Ron. **Codex owns execution of thi
 
 ## Where things stand
 
-- The spec and implementation plan are complete. **M0 passed**: `v0.0.0-m0` installed from GitHub with no existing kit shim/cache, and fresh Claude/Codex sessions loaded the skill and ran the development command. Evidence and §14 findings are in `docs/build-notes.md`. Next: M1, starting with dependency vetting and approval.
+- The spec and implementation plan are complete. **M0 passed**: `v0.0.0-m0` installed from GitHub with no existing kit shim/cache, and fresh Claude/Codex sessions loaded the skill and ran the development command. Evidence and §14 findings are in `docs/build-notes.md`. M1 also passed: locked Rust tests/build and the real throwaway Keychain test. M2 guards, reads, profiles and posting are implemented; next is the authorized scratch-channel live test. See build notes for pending gates and the approved webhook-spec change.
 - The sanitized public master and `v0.0.0-m0` were pushed with Ron's approval. Ask Ron before any additional tag push or release publication. Never push original private history; public master descends only from the sanitized initial commit.
 
 ## Boundaries

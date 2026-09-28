@@ -21,6 +21,19 @@ pub struct Cli {
 pub enum Command {
     /// Check local setup and server access.
     Doctor,
+    /// Scan and post the exact file/stdin bytes to the project channel.
+    Post {
+        #[arg(long)]
+        channel: Option<String>,
+        #[arg(long)]
+        thread: Option<String>,
+        #[arg(long)]
+        split: bool,
+        #[arg(long)]
+        kind: Option<u16>,
+        /// A UTF-8 message file, or - for stdin. Attachments are not supported.
+        file: String,
+    },
     /// Read channel messages or a thread.
     Read {
         #[arg(long)]

@@ -1,0 +1,9 @@
+name: CI
+on: [push, pull_request]
+permissions: {}
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Synthetic acceptance check
+        run: printf 'Synthetic acceptance check passed\n'

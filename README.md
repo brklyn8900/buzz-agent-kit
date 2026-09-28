@@ -2,7 +2,7 @@
 
 A shared plugin for Claude Code and Codex: separate assistant identities, guarded messages, and one project room for humans and coding agents using [Buzz](https://github.com/block/buzz).
 
-**Development status:** M0–M2 passed. Production skills and CI setup are in progress; v0.1.0 is not published. The existing `v0.0.0-m0` tag is a development probe, not a production installer. Commands below describe installation from a completed release tag; substitute an actually published `vX.Y.Z`.
+**Development status:** M0–M2 passed. Skills, CI setup and the installer are implemented; live M3 verification remains pending. v0.1.0 is not published. The existing `v0.0.0-m0` tag is a development probe, not a production installer. Commands below describe installation from a completed release tag; substitute an actually published `vX.Y.Z`.
 
 ## Install a release
 

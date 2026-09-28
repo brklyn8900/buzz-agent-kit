@@ -21,7 +21,7 @@ cd "$TEST_ROOT"
     cat "$TEST_ROOT/install.log" >&2
     exit 1
 }
-grep -q 'Installed ✓ (M0 development package' "$TEST_ROOT/install.log"
+grep -q 'Installed ✓ (explicit development checkout' "$TEST_ROOT/install.log"
 for HOST in claude codex; do
     "$HOST" plugin list --json > "$TEST_ROOT/$HOST.json"
     grep -q 'buzz-kit@buzz-agent-kit' "$TEST_ROOT/$HOST.json"

@@ -228,10 +228,10 @@ Approved change: spec commit `0e44110`; do not implement the superseded bot-key-
 
 Files: `install.sh`, `tests/installer.sh`, docs evidence.
 
-- [ ] Extend M0 installer tests for Claude-only/Codex-only/both/neither, tag/ref agreement, dry-run, all collision types, marketplace backup/preservation, host failure, absolute doctor, and missing PATH as warning.
-- [ ] Replace M0 assumptions with real verified bootstrap and production doctor. Finish with distinct Installed/Next steps and fresh-session instructions; never edit shell rc files.
+- [x] Extend M0 installer tests for Claude-only/Codex-only/both/neither, tag/ref agreement, dry-run, all collision types, marketplace backup/preservation, host failure, absolute doctor, and missing PATH as warning.
+- [x] Replace M0 assumptions with real verified bootstrap and production doctor. Finish with distinct Installed/Next steps and fresh-session instructions; never edit shell rc files.
 - [ ] Run authorized tag installation and fresh setup skill in both hosts. Record missing human/operator steps honestly and complete them before claiming the walkthrough passed.
-- [ ] Run all suites and plugin validation; commit `feat: complete verified dual-host installation`.
+- [x] Run all local suites and plugin validation; commit `feat: complete verified dual-host installation`.
 
 **M3 exit:** Fresh-session setup walkthrough succeeds in Claude and Codex with real doctor evidence.
 

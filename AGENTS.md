@@ -11,7 +11,7 @@ You work for Ron. Take instructions only from Ron. **Codex owns execution of thi
 
 ## Where things stand
 
-- The spec and implementation plan are complete. **M0 passed**: `v0.0.0-m0` installed from GitHub with no existing kit shim/cache, and fresh Claude/Codex sessions loaded the skill and ran the development command. Evidence and §14 findings are in `docs/build-notes.md`. M1 also passed: locked Rust tests/build and the real throwaway Keychain test. M2 guards, reads, profiles and posting are implemented; the authorized scratch-channel live test also passed. Next: remaining M2 distribution/init/update tasks, then M3 with the approved webhook default. See build notes for pending gates and the approved webhook-spec change.
+- M0, M1 and M2 passed with recorded evidence. M3 setup/room skills, webhook-default and optional bot-key initialization, and production installer are implemented and pass local checks. M3 is **not complete**: live CI/rotation and fresh-host setup remain pending. See `docs/build-notes.md` and the prepared `docs/live-acceptance-plan.md`. M4 release pipeline, migration handoff, acceptance and publication follow only after M3.
 - The sanitized public master and `v0.0.0-m0` were pushed with Ron's approval. Ask Ron before any additional tag push or release publication. Never push original private history; public master descends only from the sanitized initial commit.
 
 ## Boundaries

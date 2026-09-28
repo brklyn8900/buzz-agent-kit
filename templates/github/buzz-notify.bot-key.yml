@@ -47,7 +47,7 @@ jobs:
           curl --disable --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
             'https://github.com/block/buzz/releases/download/desktop-v0.5.25/Buzz_0.5.25_amd64.deb' -o "$scratch/buzz.deb"
           echo "0990e351453d7eb31e50a498df8efced5ede57931bb414fc50cc9ca56d672293  $scratch/buzz.deb" | sha256sum -c -
-          ar p "$scratch/buzz.deb" data.tar.gz | tar -xOz usr/bin/buzz > "$scratch/buzz"
+          ar p "$scratch/buzz.deb" data.tar.gz | tar -xzOf - usr/bin/buzz > "$scratch/buzz"
           echo "f30dc8744e49faa3b4e1703fbc26f6af9285b36dcca498b41eb3680b5b9a25e6  $scratch/buzz" | sha256sum -c -
           chmod 700 "$scratch/buzz"
           unset BUZZ_AUTH_TAG

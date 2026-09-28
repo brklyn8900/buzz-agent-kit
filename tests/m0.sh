@@ -9,7 +9,7 @@ for file in .claude-plugin/plugin.json .claude-plugin/marketplace.json \
 done
 for file in .claude-plugin/plugin.json plugin.json; do
     grep -q '"name": "buzz-kit"' "$ROOT/$file" || fail "plugin identity: $file"
-    grep -q '"version": "0.0.0-m0"' "$ROOT/$file" || fail "M0 version: $file"
+    grep -q '"version":' "$ROOT/$file" || fail "missing version: $file"
 done
 for file in .claude-plugin/marketplace.json .agents/plugins/marketplace.json; do
     grep -q '"name": "buzz-agent-kit"' "$ROOT/$file" || fail "marketplace identity: $file"
@@ -62,6 +62,7 @@ cmp "$HOME/.local/bin/buzz-kit" "$TEST_ROOT/foreign-before" || fail 'foreign shi
 readlink "$XDG_DATA_HOME/buzz-kit/current" > "$TEST_ROOT/current-after"
 cmp "$TEST_ROOT/current-before" "$TEST_ROOT/current-after" || fail 'foreign refusal changed current'
 printf 'PASS: foreign shim refusal preserves existing files\n'
+unset BUZZ_KIT_BIN
 UNTAGGED="$TEST_ROOT/untagged-checkout"
 mkdir "$UNTAGGED"
 cp "$ROOT/install.sh" "$UNTAGGED/install.sh"
@@ -72,9 +73,16 @@ git -C "$UNTAGGED" -c user.name='M0 test' -c user.email='test@example.com' \
 if "$UNTAGGED/install.sh" --dry-run >"$TEST_ROOT/untagged" 2>&1; then
     fail 'untagged checkout accepted without --dev'
 fi
-git -C "$UNTAGGED" tag v0.0.0-m0
+mkdir -p "$UNTAGGED/.claude-plugin" "$UNTAGGED/crates/buzz-kit"
+for manifest in plugin.json .claude-plugin/plugin.json .claude-plugin/marketplace.json crates/buzz-kit/Cargo.toml; do
+    cp "$ROOT/$manifest" "$UNTAGGED/$manifest"
+done
+git -C "$UNTAGGED" add .
+git -C "$UNTAGGED" -c user.name='M0 test' -c user.email='test@example.com' -c commit.gpgsign=false commit -qm 'test: tagged manifest fixture'
+VERSION=$(sed -n 's/.*"version"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$ROOT/plugin.json")
+git -C "$UNTAGGED" tag "v$VERSION"
 "$UNTAGGED/install.sh" --dry-run >"$TEST_ROOT/tagged"
-grep -q 'v0.0.0-m0' "$TEST_ROOT/tagged" || fail 'tagged dry-run omitted ref'
+grep -q "v$VERSION" "$TEST_ROOT/tagged" || fail 'tagged dry-run omitted ref'
 HOME="$TEST_ROOT/dry-home"
 XDG_DATA_HOME="$HOME/data"
 export HOME XDG_DATA_HOME

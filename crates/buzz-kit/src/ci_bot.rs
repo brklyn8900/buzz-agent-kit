@@ -15,6 +15,9 @@ use std::{
 };
 use zeroize::Zeroizing;
 
+#[cfg(test)]
+mod live_tests;
+
 pub const WORKFLOW: &str = "name: Buzz GitHub notifications\ntrigger:\n  on: webhook\nsteps:\n  - id: notify\n    action: send_message\n    text: '[{{trigger.repo}}] {{trigger.event}}: {{trigger.title}} ({{trigger.actor}}) {{trigger.url}}'\n";
 pub struct Webhook {
     pub workflow_id: String,

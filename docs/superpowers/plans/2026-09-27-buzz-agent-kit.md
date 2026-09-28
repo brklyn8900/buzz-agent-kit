@@ -112,10 +112,10 @@ Files: `src/keystore/`, backend tests, public CLI-shape notes.
 
 Files: `src/{identity,assistant}.rs`, `tests/assistant.rs`.
 
-- [ ] Write known-vector secp256k1 public-key and npub round-trip tests; duplicate new refusal; show/list public-only; remove confirmation.
-- [ ] Write migration fake-store cases: identical destination no-op, different destination refusal naming public keys, failed write/read-back removes only newly created copy, legacy untouched, cleanup refuses unequal keys.
-- [ ] Implement `assistant new/list/show/remove/import/cleanup-legacy`, secret buffers zeroed and never formatted. Import never removes source; cleanup is separate and confirmed.
-- [ ] Run `cargo test --locked`; commit `feat: add assistant identity lifecycle and safe migration`.
+- [x] Write known-vector secp256k1 public-key and npub round-trip tests; duplicate new refusal; show/list public-only; remove confirmation.
+- [x] Write migration fake-store cases: identical destination no-op, different destination refusal naming public keys, failed write/read-back removes only newly created copy, legacy untouched, cleanup refuses unequal keys.
+- [x] Implement `assistant new/list/show/remove/import/cleanup-legacy`, secret buffers zeroed and never formatted. Import never removes source; cleanup is separate and confirmed.
+- [x] Run `cargo test --locked`; commit `feat: add assistant identity lifecycle and safe migration`.
 
 ### M1.4: Doctor, Buzz discovery, and host adapters
 

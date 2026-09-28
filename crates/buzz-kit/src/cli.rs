@@ -21,6 +21,38 @@ pub struct Cli {
 pub enum Command {
     /// Check local setup and server access.
     Doctor,
+    /// Manage assistant identities; private keys are never printed.
+    Assistant {
+        #[command(subcommand)]
+        command: AssistantCommand,
+    },
+}
+
+#[derive(Subcommand)]
+pub enum AssistantCommand {
+    New {
+        name: String,
+    },
+    List,
+    Show {
+        name: String,
+    },
+    Remove {
+        name: String,
+        #[arg(long)]
+        yes: bool,
+    },
+    /// Copy a legacy Keychain item; never deletes its source.
+    Import {
+        #[arg(long)]
+        legacy: String,
+    },
+    /// Delete the old copy only after all callers have been re-verified.
+    CleanupLegacy {
+        legacy: String,
+        #[arg(long)]
+        yes: bool,
+    },
 }
 
 #[cfg(test)]

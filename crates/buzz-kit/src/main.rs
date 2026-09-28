@@ -39,6 +39,15 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
         .collect();
     let home = std::env::var_os("HOME").ok_or_else(|| anyhow::anyhow!("HOME is required"))?;
     let home = Path::new(&home);
+    if matches!(cli.command, Command::InstallBuzzCli) {
+        let path = buzz_kit::install_buzz::run(home)?;
+        if cli.json {
+            println!("{}", serde_json::json!({"path":path}));
+        } else {
+            println!("Buzz CLI: {}", path.display());
+        }
+        return Ok(());
+    }
     if let Command::Update {
         to,
         unpin,
@@ -82,7 +91,7 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
     }
     let config = config::load(home, &std::env::current_dir()?, &flags, &env)?;
     match &cli.command {
-        Command::Doctor | Command::Update { .. } => unreachable!(),
+        Command::Doctor | Command::Update { .. } | Command::InstallBuzzCli => unreachable!(),
         Command::Init {
             channel,
             no_verify,

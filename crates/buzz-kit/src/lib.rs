@@ -10,3 +10,5 @@ pub mod init;
 pub mod keystore;
 pub mod post;
 pub mod update;
+
+pub mod install_buzz;

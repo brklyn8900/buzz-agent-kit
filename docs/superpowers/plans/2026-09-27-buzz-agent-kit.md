@@ -191,9 +191,9 @@ Files: `src/update.rs`, host/launcher integration tests.
 
 Files: `src/install_buzz.rs`, artifact dependency-log entry and tests.
 
-- [ ] Vet exact official desktop .deb asset/hash and installed extraction tools for install-buzz-cli and optional bot-key CI mode; obtain dependency approval. The default webhook notifier has no .deb dependency. Never copy an old background checksum without current official verification.
-- [ ] After approval of the exact x86_64 artifact and its limits, write tests for checksum refusal, unsupported architecture/libc refusal (upstream requires glibc >= 2.38), extraction-only usr/bin/buzz, install location and discovery precedence; macOS existing-app guidance. Use existing ar/tar, no new extraction tool. Other Linux architectures require a supplied compatible Buzz CLI; all four kit binary targets remain required.
-- [ ] Implement pinned artifact installation without package-manager/root operations. Run suite; commit `feat: install checksum-pinned Buzz CLI on Linux`.
+- [x] Vet exact official desktop .deb asset/hash and installed extraction tools for install-buzz-cli and optional bot-key CI mode; obtain dependency approval. The default webhook notifier has no .deb dependency. Never copy an old background checksum without current official verification.
+- [x] After approval of the exact x86_64 artifact and its limits, write tests for checksum refusal, unsupported architecture/libc refusal (upstream requires glibc >= 2.38), extraction-only usr/bin/buzz, install location and discovery precedence; macOS existing-app guidance. Use existing ar/tar, no new extraction tool. Other Linux architectures require a supplied compatible Buzz CLI; all four kit binary targets remain required.
+- [x] Implement pinned artifact installation without package-manager/root operations. Run suite; commit `feat: install checksum-pinned Buzz CLI on Linux`.
 
 **M2 exit:** All guard, allowlist, payload, merge, bootstrap and update checks pass; real scratch-thread post verified. No substituted/faked live evidence.
 

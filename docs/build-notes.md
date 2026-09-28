@@ -229,3 +229,14 @@ Read Ron-approved spec commit `0e44110` after the M2.3 live task. Updated M3.2 f
 - Findings: no ARM64 Linux artifact; glibc 2.38 required; no GitHub attestation (HTTP 404); upstream release is mutable and its build does not use --locked. Conservative source-lock OSV scan found two advisories: aarch64-only cmov correctness issue and instant unmaintained notice. Kit's own cmov is already the fixed 0.5.4.
 - Plan updated with explicit architecture/libc checks and system extraction tools. Recommend this exact x86_64 artifact with the recorded limitations; await Ron's dependency approval before implementing its pin or installing it. Default webhook mode has no dependency on this artifact. No spec decisions changed.
 - Current gates: M0 and M1 passed; M2.1–M2.6 passed, M2.7 pending dependency approval and implementation. M3/M4 and publication remain pending. Authorized live import/post proof is complete; legacy cleanup remains gated on the deployment handoff and re-verification.
+
+## M2.7 — approved Linux CLI installer (complete, 2026-09-27)
+
+- Ron approved the exact reviewed x86_64 .deb, checksums and documented limitations. No other dependency approval inferred.
+- Red: supported-platform and install-success tests failed at stubs. Green: five ordinary installer/discovery tests pass. They exercise glibc/architecture refusal, archive and binary checksum refusal, extraction of only the CLI, intact-cache reuse, corrupt-cache refusal, symlink/foreign-current preservation and explicit discovery override precedence.
+- Real official archive: ignored extraction test passed 1/1 against the approved downloaded bytes, into a disposable home, without executing the Linux binary. Exact extracted hash matched the vetting entry. macOS `buzz-kit install-buzz-cli --json` exited 0 and identified the existing application CLI.
+- `cargo test --locked`: 53 passed, zero failed, two ignored (real Keychain and approved-archive tests each separately passed). Locked build and launcher suite pass. Installer uses existing curl/ar/tar, performs no package installation or root operation, and refuses unsupported Linux targets/libc. Actual Linux execution remains M4 acceptance item 4, not claimed here.
+
+### M2 exit — PASS (2026-09-27)
+
+All local guards, allowlists, payload, settings merge, bootstrap, update and installer tests pass. M2.3 records the real scratch-thread claim/reply author and parent verification. M0/M1/M2 are complete; M3 begins with the approved webhook default. Release acceptance and publication remain open.

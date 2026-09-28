@@ -21,6 +21,8 @@ pub struct Cli {
 pub enum Command {
     /// Check local setup and server access.
     Doctor,
+    /// Install the verified Linux CLI or check the existing macOS app.
+    InstallBuzzCli,
     /// Explicitly update, roll back, or release a persistent binary pin.
     Update {
         #[arg(long)]

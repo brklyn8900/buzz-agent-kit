@@ -81,7 +81,7 @@ Build-script code hashes are in the proposal JSON. The procedural macros `clap_d
 
 Approval requested: all ten exact direct pins, the 47 exact transitive entries, the listed build-script/procedural-macro exceptions, and the stated review limitations. **Approved by Ron on 2026-09-27**, including the exact graph, compiler inputs and stated limitations. This approval permits compilation of this batch. Other tools, Actions, dependency changes and releases remain separate gates.
 
-## Proposed M2.7 Linux Buzz artifact — awaiting approval
+## Approved M2.7 Linux Buzz artifact
 
 Review date: 2026-09-27. Reviewer: Codex. Decision: recommend the exact **x86_64** artifact below with the explicit limitations in this entry. Downloaded and extracted for static inspection only; not installed, executed, or added as a shipped dependency. Approval applies only to `install-buzz-cli` and optional bot-key CI. The default webhook notifier requires no Buzz download.
 
@@ -111,4 +111,4 @@ Use the official Buzz CLI for protocol/signing compatibility rather than reprodu
 
 - Support automatic extraction on Linux **x86_64 with glibc >= 2.38**. Refuse other architectures and incompatible libc clearly before replacing anything. No ARM64 Linux `.deb` exists in this release; inspected release workflow also builds only Linux x64. Keep all four kit binary targets as specified; users on other Linux targets must supply a compatible Buzz executable through the existing discovery path.
 - Use existing system `curl`, `ar`, and `tar`, checking availability. No `dpkg-deb` download, package-manager invocation, root operation, desktop installation, or new crate. Verify the pinned outer digest and extracted CLI bytes; stage and atomically install only the CLI under the user cache.
-- Approval requested for this artifact/hash and the documented upstream provenance, maintenance, architecture and libc limitations. **Pending Ron's decision.** No spec §2 change proposed; document these upstream installer constraints in usage and build notes. If broader automatic Linux installation is required, a separate upstream artifact/build proposal must be vetted and approved.
+- Approval requested for this artifact/hash and the documented upstream provenance, maintenance, architecture and libc limitations. **Approved by Ron on 2026-09-27**, including the documented limitations. No spec §2 change proposed; document these upstream installer constraints in usage and build notes. If broader automatic Linux installation is required, a separate upstream artifact/build proposal must be vetted and approved.

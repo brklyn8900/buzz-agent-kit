@@ -23,6 +23,11 @@ pub enum Command {
     Doctor,
     /// Install the verified Linux CLI or check the existing macOS app.
     InstallBuzzCli,
+    /// Configure webhook notifications or an explicitly selected bot identity.
+    CiBot {
+        #[command(subcommand)]
+        command: CiCommand,
+    },
     /// Explicitly update, roll back, or release a persistent binary pin.
     Update {
         #[arg(long)]
@@ -145,4 +150,25 @@ mod tests {
         assert!(cli.json);
         assert_eq!(cli.config, Some(PathBuf::from("project.json")));
     }
+}
+
+#[derive(Clone, Copy, Default, clap::ValueEnum)]
+pub enum CiMode {
+    #[default]
+    Webhook,
+    BotKey,
+}
+
+#[derive(Subcommand)]
+pub enum CiCommand {
+    Init {
+        #[arg(long, value_enum, default_value = "webhook")]
+        mode: CiMode,
+        #[arg(long)]
+        repo: Option<String>,
+        #[arg(long)]
+        name: Option<String>,
+        #[arg(long, default_value = "CI")]
+        ci_workflow: String,
+    },
 }

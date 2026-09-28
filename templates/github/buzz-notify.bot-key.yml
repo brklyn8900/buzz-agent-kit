@@ -1,0 +1,60 @@
+name: Buzz notifications
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, closed]
+  issues:
+    types: [opened, closed]
+  release:
+    types: [published]
+  workflow_run:
+    workflows: [__CI_WORKFLOW_JSON__]
+    types: [completed]
+permissions: {}
+jobs:
+  notify:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Notify Buzz
+        env:
+          BUZZ_RELAY_URL: ${{ vars.BUZZ_RELAY_URL }}
+          BUZZ_CHANNEL_ID: ${{ vars.BUZZ_CHANNEL_ID }}
+          BUZZ_PRIVATE_KEY: ${{ secrets.BUZZ_CI_KEY }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          TITLE: ${{ github.event.pull_request.title || github.event.issue.title || github.event.release.name || github.event.release.tag_name || github.event.workflow_run.name }}
+          URL: ${{ github.event.pull_request.html_url || github.event.issue.html_url || github.event.release.html_url || github.event.workflow_run.html_url }}
+          ACTOR: ${{ github.actor }}
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No checkout or execution of PR code. Forks without secrets skip.
+          [ -n "$BUZZ_PRIVATE_KEY" ] && [ -n "$BUZZ_RELAY_URL" ] && [ -n "$BUZZ_CHANNEL_ID" ] || exit 0
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            pull_request:opened|pull_request:reopened|pull_request:ready_for_review) event="PR $EVENT_ACTION" ;;
+            pull_request:closed) if [ "$PR_MERGED" = true ]; then event="PR merged"; else event="PR closed"; fi ;;
+            issues:opened|issues:closed) event="issue $EVENT_ACTION" ;;
+            release:published) event="release published" ;;
+            workflow_run:completed) [ "$CI_CONCLUSION" = failure ] || exit 0; event="CI failed" ;;
+            *) exit 0 ;;
+          esac
+          scratch=$(mktemp -d)
+          trap 'rm -rf "$scratch"' EXIT
+          curl --disable --fail --silent --show-error --location --proto '=https' --proto-redir '=https' \
+            'https://github.com/block/buzz/releases/download/desktop-v0.5.25/Buzz_0.5.25_amd64.deb' -o "$scratch/buzz.deb"
+          echo "0990e351453d7eb31e50a498df8efced5ede57931bb414fc50cc9ca56d672293  $scratch/buzz.deb" | sha256sum -c -
+          ar p "$scratch/buzz.deb" data.tar.gz | tar -xOz usr/bin/buzz > "$scratch/buzz"
+          echo "f30dc8744e49faa3b4e1703fbc26f6af9285b36dcca498b41eb3680b5b9a25e6  $scratch/buzz" | sha256sum -c -
+          chmod 700 "$scratch/buzz"
+          unset BUZZ_AUTH_TAG
+          # Choose a valid kind from actual channel metadata; never broadcast.
+          name=$("$scratch/buzz" --relay "$BUZZ_RELAY_URL" channels get --channel "$BUZZ_CHANNEL_ID" | jq -er '.name')
+          type=$("$scratch/buzz" --relay "$BUZZ_RELAY_URL" channels search --query "$name" --exact | jq -er --arg id "$BUZZ_CHANNEL_ID" '.[] | select(.channel_id==$id) | .channel_type')
+          case "$type" in stream) kind=9 ;; forum) kind=45001 ;; *) exit 1 ;; esac
+          jq -nr --arg repo "$REPO" --arg event "$event" --arg title "$TITLE" --arg url "$URL" --arg actor "$ACTOR" \
+            '"["+$repo+"] "+$event+": "+$title+" ("+$actor+") "+$url' |
+            "$scratch/buzz" --relay "$BUZZ_RELAY_URL" messages send --channel "$BUZZ_CHANNEL_ID" --kind "$kind" --content - >/dev/null

@@ -183,6 +183,13 @@ pub fn run(home: &Path, cwd: &Path, flags: &Flags, env: &Env) -> Report {
         Some(_) => report.add("keystore", "pass", "platform keystore selected"),
         None => report.add("keystore", "skipped", "repair configuration first"),
     }
+    if let (Some(client), Some(secret)) = (&client, &key) {
+        match crate::ci_bot::visibility(home,&crate::init::project_root(cwd),client,secret) {
+            Ok(Some(true))=>report.add("ci-webhook","pass","recorded workflow is visible"),
+            Ok(None)=>{},
+            _=>report.add("ci-webhook","warning","CI workflow is not visible or setup is incomplete; inspect its local recovery record and owner membership"),
+        }
+    }
     let data = std::env::var_os("XDG_DATA_HOME")
         .map(PathBuf::from)
         .unwrap_or_else(|| home.join(".local/share"))

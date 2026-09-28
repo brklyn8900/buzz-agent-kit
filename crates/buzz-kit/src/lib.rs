@@ -12,3 +12,5 @@ pub mod post;
 pub mod update;
 
 pub mod install_buzz;
+
+pub mod ci_bot;

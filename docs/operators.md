@@ -25,3 +25,15 @@ Optional `--mode bot-key` uses the reviewed Buzz 0.5.25 x86_64 artifact and a na
 ## iOS notifications
 
 Pair the mobile client with Desktop, enable notifications in iOS settings and select the intended channel's notification preferences. Server-side push availability depends on the deployed Buzz version and gateway configuration; installing the kit does not enable it. Have the deployment operator follow the version-matched [upstream push gateway guide](https://github.com/block/buzz/blob/desktop-v0.5.25/docs/push-gateway-deployment.md) and prove delivery on a physical device. The 0.5.25 guide describes an App Attest/APNs gateway with a constrained application profile, so do not assume arbitrary self-hosted clients can enroll. Keep APNs credentials at the gateway, never in this kit or a room message.
+
+## Initializer and recovery
+
+Run `buzz-kit ci-bot init --repo owner/repo --ci-workflow "CI"` from the configured project. Substitute the exact existing CI workflow name. Omit `--repo` to resolve the current GitHub repository. `--name` names the Buzz workflow; in explicit `--mode bot-key` it names the new local bot identity. GitHub CLI must already be installed and authenticated with permission to set that repository's Actions secrets and variables.
+
+The initializer refuses to overwrite `.github/workflows/buzz-notify.yml`. Review and commit that generated file yourself; it does not push or open a PR. Missing fork secrets skip notification safely. The job never checks out PR code.
+
+Setup reserves an owner-only recovery record under `~/.config/buzz-kit/ci/`, keyed by the canonical project path. The record contains mode, repository, phase and a public workflow ID when known; it contains no secret or relay/channel configuration. Keep it local. A failed GitHub export may leave a remote workflow or some GitHub settings in place. The error reports the record path and any known workflow ID; rerunning refuses to create duplicates.
+
+For a failed webhook setup, inspect the indicated workflow as its owner. If creation delivery was uncertain, list workflows in the approved channel and identify the fixed notifier definition before proceeding. The one-time secret is not recoverable from the kit's record. After explicitly revoking the partial remote workflow and confirming its endpoint is rejected, remove that exact local recovery record and any partial generated workflow file, then reinitialize. Existing GitHub values may need replacement or removal in that same authorized repository. Never delete unrelated workflows or bulk-remove recovery files.
+
+For a failed bot-key export, the new local bot key remains available. Re-export directly to `gh secret set` stdin through a trusted local helper; never display it. Alternatively, explicitly remove that unneeded bot identity, reconcile partial GitHub settings, and clear only its setup record before starting again. Successful interactive bot setup offers local-key deletion; noninteractive/JSON mode retains it and prints the public follow-up command. Server enrollment and channel role `bot` still require the operator.

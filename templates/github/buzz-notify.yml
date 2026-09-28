@@ -1,0 +1,48 @@
+name: Buzz notifications
+on:
+  pull_request:
+    types: [opened, reopened, ready_for_review, closed]
+  issues:
+    types: [opened, closed]
+  release:
+    types: [published]
+  workflow_run:
+    workflows: [__CI_WORKFLOW_JSON__]
+    types: [completed]
+permissions: {}
+jobs:
+  notify:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'failure'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 2
+    steps:
+      - name: Notify Buzz
+        env:
+          BUZZ_WEBHOOK_URL: ${{ vars.BUZZ_WEBHOOK_URL }}
+          BUZZ_WEBHOOK_SECRET: ${{ secrets.BUZZ_WEBHOOK_SECRET }}
+          REPO: ${{ github.repository }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          PR_MERGED: ${{ github.event.pull_request.merged }}
+          TITLE: ${{ github.event.pull_request.title || github.event.issue.title || github.event.release.name || github.event.release.tag_name || github.event.workflow_run.name }}
+          URL: ${{ github.event.pull_request.html_url || github.event.issue.html_url || github.event.release.html_url || github.event.workflow_run.html_url }}
+          ACTOR: ${{ github.actor }}
+          CI_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # No checkout or execution of PR code. Forks without secrets skip.
+          [ -n "$BUZZ_WEBHOOK_SECRET" ] && [ -n "$BUZZ_WEBHOOK_URL" ] || exit 0
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            pull_request:opened|pull_request:reopened|pull_request:ready_for_review) event="PR $EVENT_ACTION" ;;
+            pull_request:closed) if [ "$PR_MERGED" = true ]; then event="PR merged"; else event="PR closed"; fi ;;
+            issues:opened|issues:closed) event="issue $EVENT_ACTION" ;;
+            release:published) event="release published" ;;
+            workflow_run:completed) [ "$CI_CONCLUSION" = failure ] || exit 0; event="CI failed" ;;
+            *) exit 0 ;;
+          esac
+          jq -n --arg repo "$REPO" --arg event "$event" --arg title "$TITLE" --arg url "$URL" --arg actor "$ACTOR" \
+            '{repo:$repo,event:$event,title:$title,url:$url,actor:$actor}' |
+            curl --disable --fail-with-body --silent --show-error --max-time 30 --proto '=https' \
+              --header "x-webhook-secret: $BUZZ_WEBHOOK_SECRET" --header 'Content-Type: application/json' \
+              --data-binary @- --url "$BUZZ_WEBHOOK_URL" --output /dev/null

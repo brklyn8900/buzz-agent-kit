@@ -92,6 +92,68 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
     let config = config::load(home, &std::env::current_dir()?, &flags, &env)?;
     match &cli.command {
         Command::Doctor | Command::Update { .. } | Command::InstallBuzzCli => unreachable!(),
+        Command::CiBot {
+            command:
+                buzz_kit::cli::CiCommand::Init {
+                    mode,
+                    repo,
+                    name,
+                    ci_workflow,
+                },
+        } => {
+            let root = buzz_kit::init::project_root(&std::env::current_dir()?);
+            let gh = keystore::find_program("gh").ok_or_else(|| {
+                anyhow::anyhow!("GitHub CLI is required; install and authenticate it")
+            })?;
+            let repo = buzz_kit::ci_bot::repository(&gh, &root, repo.as_deref())?;
+            let channel =
+                config.project.channel.as_ref().ok_or_else(|| {
+                    anyhow::anyhow!("configure the project channel with init first")
+                })?;
+            let store = keystore::open(config.backend, home)?;
+            let secret = if matches!(mode, buzz_kit::cli::CiMode::Webhook) {
+                Some(
+                    store
+                        .get(&config::active_assistant(&config, &env)?)?
+                        .ok_or_else(|| anyhow::anyhow!("assistant key not found"))?,
+                )
+            } else {
+                None
+            };
+            let name = name.as_deref().unwrap_or("ci-bot");
+            let result = buzz_kit::ci_bot::initialize(buzz_kit::ci_bot::Setup {
+                home,
+                root: &root,
+                gh: &gh,
+                repo: &repo,
+                ci_workflow,
+                mode: *mode,
+                name,
+                client: &client(&config, &env, home)?,
+                channel: &channel.id,
+                assistant: secret.as_ref(),
+                store: store.as_ref(),
+            })?;
+            if cli.json {
+                println!("{}", serde_json::to_string(&result)?);
+            } else {
+                if let Some(public) = &result.bot {
+                    print_identity(public, false)?;
+                }
+                if let Some(id) = &result.workflow_id {
+                    println!("Created webhook workflow {id}");
+                }
+                println!("{}", result.next);
+                if result.bot.is_some()
+                    && io::stdin().is_terminal()
+                    && confirm(false, "Delete the exported bot's local key?")?
+                {
+                    assistant::remove(store.as_ref(), name, true)?;
+                    println!("Local bot key removed; GitHub secret retained.");
+                }
+            }
+            Ok(())
+        }
         Command::Init {
             channel,
             no_verify,

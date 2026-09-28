@@ -150,6 +150,16 @@ impl Buzz {
         secret: &Secret,
         input: Option<&[u8]>,
     ) -> Result<serde_json::Value> {
+        let stdout = self.execute_sensitive(args, secret, input)?;
+        serde_json::from_slice(&stdout)
+            .map_err(|_| anyhow::anyhow!("Buzz returned invalid JSON; check CLI compatibility"))
+    }
+    pub(crate) fn execute_sensitive(
+        &self,
+        args: &[&str],
+        secret: &Secret,
+        input: Option<&[u8]>,
+    ) -> Result<Zeroizing<Vec<u8>>> {
         let relay = config::normalize_relay(&self.relay)?;
         let mut child = Command::new(&self.executable)
             .args(["--relay", &relay, "--format", "json"])
@@ -189,8 +199,7 @@ impl Buzz {
             }
             .into());
         }
-        serde_json::from_slice(&stdout)
-            .map_err(|_| anyhow::anyhow!("Buzz returned invalid JSON; check CLI compatibility"))
+        Ok(stdout)
     }
     pub fn channels(&self, secret: &Secret) -> Result<Vec<Channel>> {
         serde_json::from_value(self.read_json(&["channels", "list"], secret)?)

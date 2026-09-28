@@ -62,9 +62,19 @@ cmp "$HOME/.local/bin/buzz-kit" "$TEST_ROOT/foreign-before" || fail 'foreign shi
 readlink "$XDG_DATA_HOME/buzz-kit/current" > "$TEST_ROOT/current-after"
 cmp "$TEST_ROOT/current-before" "$TEST_ROOT/current-after" || fail 'foreign refusal changed current'
 printf 'PASS: foreign shim refusal preserves existing files\n'
-if "$ROOT/install.sh" --dry-run >"$TEST_ROOT/untagged" 2>&1; then
+UNTAGGED="$TEST_ROOT/untagged-checkout"
+mkdir "$UNTAGGED"
+cp "$ROOT/install.sh" "$UNTAGGED/install.sh"
+git -C "$UNTAGGED" init -q -b master
+git -C "$UNTAGGED" add install.sh
+git -C "$UNTAGGED" -c user.name='M0 test' -c user.email='test@example.com' \
+    -c commit.gpgsign=false commit -qm 'test: untagged installer fixture'
+if "$UNTAGGED/install.sh" --dry-run >"$TEST_ROOT/untagged" 2>&1; then
     fail 'untagged checkout accepted without --dev'
 fi
+git -C "$UNTAGGED" tag v0.0.0-m0
+"$UNTAGGED/install.sh" --dry-run >"$TEST_ROOT/tagged"
+grep -q 'v0.0.0-m0' "$TEST_ROOT/tagged" || fail 'tagged dry-run omitted ref'
 HOME="$TEST_ROOT/dry-home"
 XDG_DATA_HOME="$HOME/data"
 export HOME XDG_DATA_HOME

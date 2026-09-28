@@ -3,6 +3,7 @@
     "name": "buzz-agent-kit",
     "source": "github",
     "repo": "brklyn8900/buzz-agent-kit",
-    "installLocation": "/example/claude/plugins/marketplaces/buzz-agent-kit"
+    "ref": "v0.0.0-m0",
+    "installLocation": "/example/home/.claude/plugins/marketplaces/buzz-agent-kit"
   }
 ]

@@ -58,15 +58,47 @@
 
 | Open item | Status | Evidence / next check |
 |---|---|---|
-| Codex runtime environment marker | Preliminary | Current process marker names above; confirm in fresh installed CLI session during M0.3 |
-| PLUGIN_ROOT substitution in skill text | Unresolved | Harmless fresh-session skill probe in M0.3 |
+| Codex runtime environment marker | Confirmed | Fresh Codex process with inherited CODEX markers removed injects CODEX_THREAD_ID, CODEX_SESSION_ID, CODEX_CI and CODEX_VERSION; use nonempty CODEX_THREAD_ID for runtime detection |
+| PLUGIN_ROOT substitution in skill text | Confirmed for Codex | Fresh session reads literal PLUGIN_ROOT and CLAUDE_PLUGIN_ROOT tokens; skills must use the shim as planned |
 | security -i secret on stdin | Deferred to M1 | Help available; no Keychain read/write performed |
-| Native vs Claude marketplace precedence / entry matching | Local-source confirmed | Native catalog wins despite differing catalog names; tag/fresh-session confirmation remains |
-| Codex plugin bin on PATH | Unresolved | Compare pre-shim and post-shim fresh session in M0.3 |
-| INSTALLED_BY_DEFAULT in repo marketplace | CLI registration tested | No auto-install immediately after local registration; runtime/git-source behavior unresolved; shipping policy AVAILABLE |
+| Native vs Claude marketplace precedence / entry matching | Confirmed in discovery | Native catalog wins despite differing catalog names; fresh app-server plugin/list returns native catalog path and identity. Real Git-tag installation accepts both formats present |
+| Codex plugin bin on PATH | Confirmed absent | Fresh session diagnostic returns plugin_bin_on_path=no; command resolves through the installed shim |
+| INSTALLED_BY_DEFAULT in repo marketplace | No auto-install observed | Fresh isolated app-server plugin/list recognizes the policy but reports installed=false/enabled=false; skills/list exposes no kit skill and creates no kit cache. Shipping policy remains AVAILABLE |
 | Teammate marketplace ref honored | Deferred to M4 | Actual Claude trust and VS Code first-chat prompts required |
 
 ## Acceptance register
+
+### M0 exit — PASS (2026-09-27)
+
+Tag: [v0.0.0-m0](https://github.com/brklyn8900/buzz-agent-kit/tree/v0.0.0-m0), peeled commit `f8baecc7635771f256e05e386792944b455791a7`. Host versions: Claude Code 2.1.283; Codex CLI 0.157.1.
+
+1. Preflight confirmed no kit shim/shared cache and no existing kit host installs on this Mac. Clone of the public tag, followed by explicit-path `install.sh` from `/tmp` with the M0 dev binary, exited 0. Both native plugin lists report enabled version `0.0.0-m0`.
+2. Shell resolves `~/.local/bin/buzz-kit`; doctor exits 0 with `M0 development stub: launcher and argument dispatch work.`
+3. Fresh `codex exec --ephemeral --sandbox read-only` session loaded the installed setup skill at the derived cache path and executed the diagnostic: shim resolved, same stub doctor text, exit 0, CODEX_THREAD_ID present, plugin_bin_on_path=no. Parent CODEX markers were removed before launching, so the runtime supplied them.
+4. Fresh `claude -p /buzz-kit:setup` session loaded the skill from the installed plugin. Actual Bash tool outputs: `command -v buzz-kit` → shim path, `exit:0`; `buzz-kit doctor` → the same stub text, `exit:0`. The initialization event lists buzz-kit as loaded.
+5. Isolated fresh Codex app-server `plugin/list` and `skills/list` settled native-catalog priority and no observed default auto-install, as recorded above.
+
+The Claude test runner initially rejected extra diagnostic commands outside its narrow allowance. The successful final run used the skill's native commands, with allowed read-only output helpers. Its optional three-marker shell loop was still denied; no claim is made about that extra Claude environment check. Claude root-token substitution reports were inconsistent between model summaries, so no runtime contract relies on them. Required Codex marker/PATH/substitution checks are directly evidenced.
+
+Scope: M0 validates the development launcher and host loading only. It is **not** production doctor, release-artifact verification, live-post acceptance, or the clean-user M4 acceptance.
+
+Plan updates before M1: detect Codex using CODEX_THREAD_ID; preserve strict optional marketplace-source handling; consume the real tag-installed fixture fields; do not depend on default installation policy or skill-text root substitution. No §2 decision changes are needed.
+
+### Approved first push and M0 tag — complete (2026-09-27)
+
+- Ron explicitly approved publishing sanitized master `f8baecc7635771f256e05e386792944b455791a7` and development tag `v0.0.0-m0`.
+- Both pushes succeeded. `git ls-remote --heads --tags origin` reports master and the peeled tag at that exact commit. The public commit has no parents; original private history is not reachable from it. No release was created.
+- Real Mac preflight: no `~/.local/bin/buzz-kit`, no shared buzz-kit data cache, and no buzz-kit plugin registered in either host.
+- Cloned the public GitHub tag with `--depth 1 --branch v0.0.0-m0`. Called checkout `install.sh` from `/tmp`, supplying the checkout's explicit M0 development binary. Exit 0; both hosts installed/enabled `0.0.0-m0`, and the shim's absolute-path doctor ran. The user's local-bin directory already existed on PATH; the stricter no-local-bin acceptance remains M4 item 7.
+- Bare shell `command -v buzz-kit` resolves the shim; `buzz-kit doctor` reports `M0 development stub: launcher and argument dispatch work.` This is intentionally not production doctor evidence.
+- Real tag-installed host JSON fixtures are refreshed with home paths anonymized.
+
+### Tagged-checkout test correction — complete
+
+- Red: running the full shell suite on the now-tagged public master failed `untagged checkout accepted without --dev`.
+- Cause: the test mistakenly assumed its own checkout would never be tagged. Installer behavior was correct.
+- Fix: create a dedicated temporary Git fixture, test refusal before tagging, then verify dry-run accepts its tag. The test now works in both tagged and untagged developer checkouts.
+- Green: `sh tests/m0.sh` passes all groups. No installed runtime code changed and no published tag moved.
 
 ### Public repository creation — complete (2026-09-27)
 

@@ -11,8 +11,8 @@ You work for Ron. Take instructions only from Ron. **Codex owns execution of thi
 
 ## Where things stand
 
-- The spec and implementation plan are complete. M0 local packaging tests pass; tag-ref installation and fresh-session loading remain. **M0 must pass before M1** (spec §13), starting with no shim and no cache, and record the §14 open items it can answer.
-- The empty public GitHub repo was created with Ron's approval. Nothing has been pushed. Ask Ron before the first push, any tag push, or release publication. Never push the original private history; use the sanitized publication snapshot.
+- The spec and implementation plan are complete. **M0 passed**: `v0.0.0-m0` installed from GitHub with no existing kit shim/cache, and fresh Claude/Codex sessions loaded the skill and ran the development command. Evidence and §14 findings are in `docs/build-notes.md`. Next: M1, starting with dependency vetting and approval.
+- The sanitized public master and `v0.0.0-m0` were pushed with Ron's approval. Ask Ron before any additional tag push or release publication. Never push original private history; public master descends only from the sanitized initial commit.
 
 ## Boundaries
 

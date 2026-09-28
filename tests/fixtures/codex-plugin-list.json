@@ -9,7 +9,11 @@
       "enabled": true,
       "source": {
         "source": "local",
-        "path": "./"
+        "path": "/example/home/.codex/.tmp/marketplaces/buzz-agent-kit"
+      },
+      "marketplaceSource": {
+        "sourceType": "git",
+        "source": "https://github.com/brklyn8900/buzz-agent-kit.git"
       },
       "installPolicy": "AVAILABLE",
       "authPolicy": "ON_INSTALL"

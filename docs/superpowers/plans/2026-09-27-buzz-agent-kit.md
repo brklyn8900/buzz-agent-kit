@@ -77,14 +77,14 @@ Files: `bin/buzz-kit`, `scripts/m0-dev-binary`, `install.sh`, `tests/m0.sh`.
 
 Files: `docs/build-notes.md`; temporary probe workspaces outside published content.
 
-- [ ] Audit all would-be public files AND reachable Git history. Prepare the exact generic replacement/publication proposal for any private input; preserve originals locally. Obtain approval before modifying the approved spec or rewriting history.
-- [ ] Present the concrete public tree, branch commit, and operations. Ask to create `brklyn8900/buzz-agent-kit`; separately obtain first-push approval. A local catalog install is useful evidence but does not prove the specified GitHub tag path.
-- [ ] Obtain approval for an M0-only tag push, clearly distinct from `v0.0.1-rc1` and final releases. Do not consume the immutable RC tag before the real release pipeline exists.
-- [ ] From a clean isolated user environment on this Mac, verify no shim, cache, or local-bin PATH entry. Checkout the approved tag and invoke `install.sh` from another directory with the M0 dev binary. Record installation outputs and plugin list entries from both real CLIs.
-- [ ] Start fresh Claude/Codex sessions. Invoke the placeholder setup skill and run `command -v buzz-kit` plus stub doctor. Record only relevant runtime marker names/booleans and path results, not all environment values.
-- [ ] Probe native-vs-Claude catalog priority in throwaway copies with distinguishable entries; probe missing/mismatched entries. Probe `INSTALLED_BY_DEFAULT` only in an isolated catalog, then restore `AVAILABLE` in the shipping tree.
-- [ ] Probe literal `PLUGIN_ROOT` substitution with a harmless diagnostic skill; separately test `bin/` PATH before adding the shim path. Record each §14 result as confirmed, contradicted, or unresolved with evidence.
-- [ ] Update dependent tasks from findings and commit `docs: record M0 dual-host tag acceptance` only when observations are recorded.
+- [x] Audit all would-be public files AND reachable Git history. Prepare the exact generic replacement/publication proposal for any private input; preserve originals locally. Obtain approval before modifying the approved spec or rewriting history.
+- [x] Present the concrete public tree, branch commit, and operations. Ask to create `brklyn8900/buzz-agent-kit`; separately obtain first-push approval. A local catalog install is useful evidence but does not prove the specified GitHub tag path.
+- [x] Obtain approval for an M0-only tag push, clearly distinct from `v0.0.1-rc1` and final releases. Do not consume the immutable RC tag before the real release pipeline exists.
+- [x] From a clean isolated user environment on this Mac, verify no shim, cache, or local-bin PATH entry. Checkout the approved tag and invoke `install.sh` from another directory with the M0 dev binary. Record installation outputs and plugin list entries from both real CLIs.
+- [x] Start fresh Claude/Codex sessions. Invoke the placeholder setup skill and run `command -v buzz-kit` plus stub doctor. Record only relevant runtime marker names/booleans and path results, not all environment values.
+- [x] Probe native-vs-Claude catalog priority in throwaway copies with distinguishable entries; probe missing/mismatched entries. Probe `INSTALLED_BY_DEFAULT` only in an isolated catalog, then restore `AVAILABLE` in the shipping tree.
+- [x] Probe literal `PLUGIN_ROOT` substitution with a harmless diagnostic skill; separately test `bin/` PATH before adding the shim path. Record each §14 result as confirmed, contradicted, or unresolved with evidence.
+- [x] Update dependent tasks from findings and commit `docs: record M0 dual-host tag acceptance` only when observations are recorded.
 
 **M0 exit:** Real tag-ref install and loaded skill in BOTH hosts, starting with no shim/cache; shell and both runtimes resolve the development command. Quote commands, versions, tag/commit, and outcomes. No M1 work until this passes.
 
@@ -96,7 +96,7 @@ Files: `docs/security/dependency-log.md`, `Cargo.toml`, `Cargo.lock`, `rust-tool
 
 - [ ] Vet each proposed direct crate from §11 at an exact version and its dependency graph; record unresolved ownership/behavior signals honestly. Obtain Ron's approval before adding any crate or toolchain download.
 - [ ] Write tests for flags > env > project > personal; invalid JSON/enums; missing optional project; explicit config path; relay normalization; runtime mapping > sole assistant fallback; ambiguous choices. Run `cargo test --locked`; expect assertion failures.
-- [ ] Implement typed parsing/config resolution and runtime marker behavior proven in M0. Keep secrets out of configuration and errors. Add canonical version checks including Cargo.
+- [ ] Implement typed parsing/config resolution and runtime marker behavior proven in M0. Use nonempty CODEX_THREAD_ID for Codex detection (M0 verified). Keep secrets out of configuration and errors. Add canonical version checks including Cargo.
 - [ ] Run `cargo test --locked` and `cargo build --locked`; commit `feat: add CLI and configuration resolution`.
 
 ### M1.2: Keystore backends and safe subprocess handling

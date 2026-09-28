@@ -32,7 +32,7 @@ fn component(value: &str) -> bool {
             .bytes()
             .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.' | b'+'))
 }
-fn repository(value: &str) -> bool {
+pub(crate) fn repository(value: &str) -> bool {
     let path = value
         .strip_prefix("https://github.com/")
         .or_else(|| value.strip_prefix("ssh://git@github.com/"))

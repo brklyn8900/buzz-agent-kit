@@ -61,6 +61,75 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
     let config = config::load(home, &std::env::current_dir()?, &flags, &env)?;
     match &cli.command {
         Command::Doctor => unreachable!(),
+        Command::Init {
+            channel,
+            no_verify,
+            no_claude_settings,
+            update_claude_settings,
+        } => {
+            let relay = config
+                .relay
+                .as_ref()
+                .ok_or_else(|| anyhow::anyhow!("configure a relay URL or pass --relay"))?;
+            let selection = channel
+                .as_deref()
+                .or_else(|| config.project.channel.as_ref().map(|c| c.id.as_str()))
+                .ok_or_else(|| anyhow::anyhow!("provide --channel with a channel name or UUID"))?;
+            let selected = if *no_verify {
+                if let Some(existing) = config
+                    .project
+                    .channel
+                    .as_ref()
+                    .filter(|c| c.id == selection || c.name == selection)
+                {
+                    existing.clone()
+                } else {
+                    anyhow::ensure!(
+                        buzz_kit::init::is_uuid(selection),
+                        "--no-verify requires a UUID or an already configured channel; a name cannot be resolved offline"
+                    );
+                    config::Channel {
+                        name: selection.into(),
+                        id: selection.into(),
+                    }
+                }
+            } else {
+                buzz_kit::buzz::reachable(relay)?;
+                let name = config::active_assistant(&config, &env)?;
+                let secret = keystore::open(config.backend, home)?
+                    .get(&name)?
+                    .ok_or_else(|| anyhow::anyhow!("assistant key not found"))?;
+                buzz_kit::init::resolve_channel(&client(&config, &env, home)?, selection, &secret)?
+            };
+            let value = serde_json::json!({"relay":relay,"channel":selected});
+            let root = buzz_kit::init::project_root(&std::env::current_dir()?);
+            let notices = buzz_kit::init::write_project(
+                &root,
+                &value,
+                env!("CARGO_PKG_VERSION"),
+                *update_claude_settings,
+                *no_claude_settings,
+            )?;
+            if cli.json {
+                println!(
+                    "{}",
+                    serde_json::json!({"configured":true,"verified":!no_verify,"notices":notices})
+                );
+            } else {
+                println!(
+                    "Project configured{}",
+                    if *no_verify {
+                        " (unverified)"
+                    } else {
+                        " and channel verified"
+                    }
+                );
+                for notice in notices {
+                    println!("{notice}");
+                }
+            }
+            Ok(())
+        }
         Command::Post {
             channel,
             thread,

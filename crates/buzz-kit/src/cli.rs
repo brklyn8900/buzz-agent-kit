@@ -21,6 +21,17 @@ pub struct Cli {
 pub enum Command {
     /// Check local setup and server access.
     Doctor,
+    /// Configure this project and merge pinned teammate plugin settings.
+    Init {
+        #[arg(long)]
+        channel: Option<String>,
+        #[arg(long)]
+        no_verify: bool,
+        #[arg(long)]
+        no_claude_settings: bool,
+        #[arg(long)]
+        update_claude_settings: bool,
+    },
     /// Scan and post the exact file/stdin bytes to the project channel.
     Post {
         #[arg(long)]

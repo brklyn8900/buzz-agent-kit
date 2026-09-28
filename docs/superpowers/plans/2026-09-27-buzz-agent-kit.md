@@ -164,10 +164,10 @@ Files: `src/post.rs`, payload integration tests, build notes.
 
 Files: `src/init.rs`, config/settings tests, example template.
 
-- [ ] Write every §5.1a conflict-table test, including alias marketplace names, false enabled flag, differing ref without/with explicit update, wrong repo, invalid JSON, existing key order, no forbidden new keys, and atomic failure behavior.
-- [ ] Write reachability/channel visibility tests, no-verify and no-claude-settings behavior, existing project preservation and trailing newline.
-- [ ] Implement `.buzz/config.json` and settings with preflight validation before mutation; print actual marketplace name and pinned Codex commands.
-- [ ] Run suite; commit `feat: initialize project and merge teammate settings safely`.
+- [x] Write every §5.1a conflict-table test, including alias marketplace names, false enabled flag, differing ref without/with explicit update, wrong repo, invalid JSON, existing key order, no forbidden new keys, and atomic failure behavior.
+- [x] Write reachability/channel visibility tests, no-verify and no-claude-settings behavior, existing project preservation and trailing newline.
+- [x] Implement `.buzz/config.json` and settings with preflight validation before mutation; print actual marketplace name and pinned Codex commands.
+- [x] Run suite; commit `feat: initialize project and merge teammate settings safely`.
 
 ### M2.5: Verified launcher, cache, and shim
 

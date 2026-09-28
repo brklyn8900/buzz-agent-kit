@@ -6,5 +6,6 @@ pub mod doctor;
 pub mod guards;
 pub mod host;
 pub mod identity;
+pub mod init;
 pub mod keystore;
 pub mod post;

@@ -1,0 +1,7 @@
+{
+  "relay": "wss://buzz.example.com",
+  "channel": {
+    "name": "project-room",
+    "id": "<channel-uuid>"
+  }
+}

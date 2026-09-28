@@ -199,3 +199,11 @@ All nine M4 items remain **NOT RUN** as production acceptance. **M0 passed**; it
 ## Approved webhook spec change — plan reconciled
 
 Read Ron-approved spec commit `0e44110` after the M2.3 live task. Updated M3.2 for default webhook workflow creation, nested-secret parsing/redaction, stdin-only GitHub secret delivery, flat JSON, fixed message template, two notifier templates, optional bot-key behavior and workflow visibility diagnostics. Updated acceptance item 5 to include webhook PR-opened/merged, wrong-secret refusal, and one bot-key PR-opened check. The .deb dependency gate remains necessary only for install-buzz-cli and optional bot-key mode; webhook mode downloads no Buzz binary. No additional spec edits or dependency additions.
+
+## M2.4 — project init and teammate settings (complete, 2026-09-27)
+
+- Red: five merge/write tests failed at stubs; the CLI test failed on missing init. Green: seven init tests pass; full locked suite passes 42 tests (one separately verified Keychain test ignored).
+- Covers aliases, deliberately disabled plugins, same-ref no-op, differing-ref preservation/explicit update, wrong repository and ambiguous alias refusal, malformed shapes/JSON, key order, no added hooks/MCP/env/permissions, symlink refusal, trailing newlines and staging-failure preservation. Both files are preflighted and staged before replacement; a failed second rename restores the old project file.
+- Actual authorized read-only live verification in an external temporary project: init resolved the scratch channel by name, checked visibility and wrote the current pinned teammate settings. Exit 0; ID/ref/enabled assertions passed; the private temporary project was removed. No channel UUID or server address entered the kit repo.
+- --no-verify works without an assistant key; --no-claude-settings leaves even an invalid existing settings file untouched. Failed server verification leaves existing project bytes unchanged.
+- Ruling: offline init requires a channel UUID or an existing configured channel, because an unseen name cannot safely yield its UUID without querying the server. No invented channel ID.

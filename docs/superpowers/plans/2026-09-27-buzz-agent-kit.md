@@ -173,10 +173,10 @@ Files: `src/init.rs`, config/settings tests, example template.
 
 Files: `bin/buzz-kit`, `tests/launcher.sh`, `release/checksums.txt`.
 
-- [ ] Replace M0-only behavior via failing shell tests for all four targets, unsupported target, checksum mismatch cleanup/current unchanged, cache hit, development override, optional gh attestation refusal, symlink invocation and different cwd.
-- [ ] Add tests for missing local-bin, foreign shim, interrupted/invalid archive extraction, unsafe tar paths, cached executable integrity, and atomic current switch. Use synthetic archives; no unapproved downloads.
-- [ ] Implement §5 bootstrap from checkout-owned checksums, immutable target cache, marked 3-line shim and shell-specific PATH guidance. Ordinary invocation executes current without implicit version update.
-- [ ] Run shell suite, sh syntax checks and shellcheck only after approved installation if unavailable. Commit `feat: verify release bootstrap and shared binary cache`.
+- [x] Replace M0-only behavior via failing shell tests for all four targets, unsupported target, checksum mismatch cleanup/current unchanged, cache hit, development override, optional gh attestation refusal, symlink invocation and different cwd.
+- [x] Add tests for missing local-bin, foreign shim, interrupted/invalid archive extraction, unsafe tar paths, cached executable integrity, and atomic current switch. Use synthetic archives; no unapproved downloads.
+- [x] Implement §5 bootstrap from checkout-owned checksums, immutable target cache, marked 3-line shim and shell-specific PATH guidance. Ordinary invocation executes current without implicit version update.
+- [x] Run shell suite, sh syntax checks and shellcheck only after approved installation if unavailable. Commit `feat: verify release bootstrap and shared binary cache`.
 
 ### M2.6: Update discovery, rollback, pin, and pruning
 

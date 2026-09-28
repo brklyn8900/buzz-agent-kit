@@ -1,0 +1,3 @@
+# No binary release has been published yet.
+# The first reviewed binary-release checksum PR will replace this placeholder.
+# Bootstrap refuses without a valid bin_tag and four artifact checksums.

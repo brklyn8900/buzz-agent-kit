@@ -1,6 +1,8 @@
 #!/bin/sh
-# M0 development launcher. Release download/verification is implemented in M2.
+# Explicit bootstrap verifies immutable release artifacts; ordinary runs use current.
 set -eu
+LC_ALL=C
+export LC_ALL
 die() { printf 'buzz-kit: %s\n' "$*" >&2; exit 1; }
 SELF=$0
 case "$SELF" in /*) ;; *) SELF="$PWD/$SELF" ;; esac
@@ -14,50 +16,152 @@ done
 KIT_DIR=$(CDPATH= cd -- "$(dirname -- "$SELF")/.." && pwd -P)
 : "${HOME:?HOME must be set}"
 DATA_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/buzz-kit"
+case "$DATA_DIR" in /*) ;; *) die 'data directory must be absolute' ;; esac
 SHIM="$HOME/.local/bin/buzz-kit"
 MARKER='# buzz-kit managed shim'
-
-bootstrap() {
-    [ -n "${BUZZ_KIT_BIN:-}" ] || die "M0 requires BUZZ_KIT_BIN=$KIT_DIR/scripts/m0-dev-binary; no release binary exists yet"
-    case "$BUZZ_KIT_BIN" in /*) ;; *) die 'BUZZ_KIT_BIN must be an absolute path' ;; esac
-    [ -f "$BUZZ_KIT_BIN" ] && [ -x "$BUZZ_KIT_BIN" ] || die 'development binary is not executable'
+OS=$(uname -s)
+hash_file() {
+    if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | awk '{print $1}'
+    else shasum -a 256 "$1" | awk '{print $1}'; fi
+}
+check_shim() {
     if [ -e "$SHIM" ] || [ -L "$SHIM" ]; then
         [ -f "$SHIM" ] && [ ! -L "$SHIM" ] &&
             [ "$(sed -n '2p' "$SHIM")" = "$MARKER" ] || die "refusing foreign shim: $SHIM"
     fi
-    # This stub cache is deliberately separate from future immutable bin-v* entries.
-    CACHE="$DATA_DIR/bin/dev-m0"
-    if [ -e "$CACHE" ]; then
-        cmp -s "$BUZZ_KIT_BIN" "$CACHE/buzz-kit" || die 'M0 development cache differs; use a fresh test HOME'
+}
+atomic_link() {
+    case "$OS" in
+        Darwin) mv -fh "$1" "$DATA_DIR/current" ;;
+        Linux) mv -fT "$1" "$DATA_DIR/current" ;;
+        *) die 'unsupported platform' ;;
+    esac
+}
+check_binary() {
+    [ -d "$1" ] && [ ! -L "$1" ] || die 'cache directory is missing or a symlink'
+    for entry in buzz-kit binary.sha256; do
+        [ -f "$1/$entry" ] && [ ! -L "$1/$entry" ] || die 'cached binary metadata is missing or unsafe; run explicit bootstrap'
+    done
+    [ -x "$1/buzz-kit" ] || die 'cached binary is not executable'
+    recorded=$(cat "$1/binary.sha256")
+    [ "${#recorded}" -eq 64 ] || die 'invalid recorded binary checksum'
+    [ "$(hash_file "$1/buzz-kit")" = "$recorded" ] || die 'cached executable checksum mismatch; current is unchanged'
+}
+checksums() {
+    CHECKSUMS="$KIT_DIR/release/checksums.txt"
+    [ -f "$CHECKSUMS" ] || die 'this checkout has no released binary checksums; use an explicit development override'
+    BIN_TAG=$(awk '$1 == "bin_tag:" { print $2 }' "$CHECKSUMS")
+    printf '%s\n' "$BIN_TAG" | grep -Eq '^bin-v(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z]+([.-][0-9A-Za-z]+)*)?$' || die 'no valid released bin_tag in this checkout'
+    awk '
+        /^[[:space:]]*(#|$)/ {next}
+        $1 == "bin_tag:" {if (NF != 2 || ++tags != 1) exit 1; next}
+        {if (NF != 2 || length($1) != 64 || $1 ~ /[^0-9a-f]/) exit 1;
+         if ($2 !~ /^buzz-kit-(aarch64-apple-darwin|x86_64-apple-darwin|x86_64-unknown-linux-gnu|aarch64-unknown-linux-gnu)\.tar\.gz$/ || seen[$2]++) exit 1;
+         count++}
+        END {if (count != 4 || tags != 1) exit 1}
+    ' "$CHECKSUMS" || die 'malformed release checksums (exactly four targets required)'
+    EXPECTED=$(awk -v asset="$ASSET" '$2 == asset {print $1}' "$CHECKSUMS")
+}
+bootstrap() {
+    check_shim
+    case "$OS:$(uname -m)" in
+        Darwin:arm64|Darwin:aarch64) TARGET=aarch64-apple-darwin ;;
+        Darwin:x86_64) TARGET=x86_64-apple-darwin ;;
+        Linux:x86_64) TARGET=x86_64-unknown-linux-gnu ;;
+        Linux:aarch64|Linux:arm64) TARGET=aarch64-unknown-linux-gnu ;;
+        *) die 'unsupported target; supported platforms are macOS/Linux on arm64/x86_64' ;;
+    esac
+    DEV=0
+    if [ -n "${BUZZ_KIT_BIN:-}" ]; then
+        case "$BUZZ_KIT_BIN" in /*) ;; *) die 'BUZZ_KIT_BIN must be an absolute path' ;; esac
+        [ -f "$BUZZ_KIT_BIN" ] && [ -x "$BUZZ_KIT_BIN" ] || die 'development binary is not executable'
+        EXPECTED=$(hash_file "$BUZZ_KIT_BIN")
+        BIN_TAG="dev-$EXPECTED"
+        TARGET=development
+        DEV=1
+    else
+        ASSET="buzz-kit-$TARGET.tar.gz"
+        checksums
+    fi
+    CACHE="$DATA_DIR/bin/$BIN_TAG"
+    for path in "$DATA_DIR" "$DATA_DIR/bin"; do
+        [ ! -L "$path" ] || die 'cache path may not be a symlink'
+    done
+    if [ -e "$DATA_DIR/current" ] || [ -L "$DATA_DIR/current" ]; then
+        [ -L "$DATA_DIR/current" ] || die 'current must be a managed symlink'
     fi
     mkdir -p "$DATA_DIR/bin" "$HOME/.local/bin"
+    LOCK="$DATA_DIR/.bootstrap-lock"
+    mkdir "$LOCK" 2>/dev/null || die 'bootstrap already running; inspect a stale .bootstrap-lock after a crash'
+    STAGING=
+    SHIM_TMP=
+    cleanup() { [ -z "$STAGING" ] || rm -rf "$STAGING"; [ -z "$SHIM_TMP" ] || rm -f "$SHIM_TMP"; rmdir "$LOCK" 2>/dev/null || true; }
+    trap cleanup EXIT
+    trap 'exit 1' HUP INT TERM
     STAGING=$(mktemp -d "$DATA_DIR/.bootstrap.XXXXXX")
     SHIM_TMP=$(mktemp "$HOME/.local/bin/.buzz-kit.XXXXXX")
-    trap 'rm -rf "$STAGING"; rm -f "$SHIM_TMP"' EXIT HUP INT TERM
-    if [ ! -e "$CACHE" ]; then
+    if [ -e "$CACHE" ] || [ -L "$CACHE" ]; then
+        check_binary "$CACHE"
+        for entry in archive.sha256 target; do
+            [ -f "$CACHE/$entry" ] && [ ! -L "$CACHE/$entry" ] || die 'missing or unsafe cached release metadata'
+        done
+        [ "$(cat "$CACHE/archive.sha256")" = "$EXPECTED" ] && [ "$(cat "$CACHE/target")" = "$TARGET" ] || die 'cached release metadata differs from this checkout; refusing replacement'
+    else
         mkdir "$STAGING/binary"
-        cp "$BUZZ_KIT_BIN" "$STAGING/binary/buzz-kit"
+        if [ "$DEV" -eq 1 ]; then
+            cp "$BUZZ_KIT_BIN" "$STAGING/binary/buzz-kit"
+            [ "$(hash_file "$STAGING/binary/buzz-kit")" = "$EXPECTED" ] || die 'development binary changed while copying'
+        else
+            ARCHIVE="$STAGING/$ASSET"
+            curl --disable -fsSL --proto '=https' --proto-redir '=https' -o "$ARCHIVE" "https://github.com/brklyn8900/buzz-agent-kit/releases/download/$BIN_TAG/$ASSET" || die 'release download failed'
+            [ "$(hash_file "$ARCHIVE")" = "$EXPECTED" ] || die 'download checksum mismatch; current is unchanged'
+            if command -v gh >/dev/null 2>&1; then
+                gh attestation verify "$ARCHIVE" --repo brklyn8900/buzz-agent-kit >/dev/null 2>&1 || die 'GitHub attestation verification failed; current is unchanged'
+            fi
+            tar -tzf "$ARCHIVE" > "$STAGING/members" || die 'invalid release archive'
+            tar -tvzf "$ARCHIVE" > "$STAGING/types" || die 'invalid release archive metadata'
+            awk 'substr($0,1,1) != "-" && substr($0,1,1) != "d" {exit 1}' "$STAGING/types" || die 'archive links and special files are forbidden'
+            awk '/^\// || /(^|\/)\.\.(\/|$)/ || /[^A-Za-z0-9_.\/-]/ {exit 1}' "$STAGING/members" || die 'unsafe archive path'
+            ENTRY=$(awk '$0 == "buzz-kit" || $0 ~ /^[A-Za-z0-9_.-]+\/buzz-kit$/ {print}' "$STAGING/members")
+            [ "$(printf '%s\n' "$ENTRY" | wc -l | tr -d ' ')" = 1 ] && [ -n "$ENTRY" ] || die 'archive must contain exactly one buzz-kit binary'
+            mkdir "$STAGING/extracted"
+            tar -xzf "$ARCHIVE" -C "$STAGING/extracted" -- "$ENTRY" || die 'release extraction failed'
+            [ -f "$STAGING/extracted/$ENTRY" ] && [ ! -L "$STAGING/extracted/$ENTRY" ] || die 'extracted binary is not a regular file'
+            cp "$STAGING/extracted/$ENTRY" "$STAGING/binary/buzz-kit"
+        fi
         chmod 755 "$STAGING/binary/buzz-kit"
+        hash_file "$STAGING/binary/buzz-kit" > "$STAGING/binary/binary.sha256"
+        printf '%s\n' "$EXPECTED" > "$STAGING/binary/archive.sha256"
+        printf '%s\n' "$TARGET" > "$STAGING/binary/target"
+        date +%s > "$STAGING/binary/installed-at"
         mv "$STAGING/binary" "$CACHE"
     fi
-    # Quote a literal path for the 3-line POSIX shim, including apostrophes.
     QUOTED=$(printf '%s' "$DATA_DIR/current/buzz-kit" | sed "s/'/'\\\\''/g")
     printf '#!/bin/sh\n%s\nexec '\''%s'\'' "$@"\n' "$MARKER" "$QUOTED" > "$SHIM_TMP"
     chmod 755 "$SHIM_TMP"
-    ln -s 'bin/dev-m0' "$STAGING/current"
-    case "$(uname -s)" in
-        Darwin) mv -fh "$STAGING/current" "$DATA_DIR/current" ;;
-        Linux) mv -fT "$STAGING/current" "$DATA_DIR/current" ;;
-        *) die 'M0 supports macOS and Linux only' ;;
-    esac
-    mv -f "$SHIM_TMP" "$SHIM"
-    printf 'M0 development bootstrap (no release verification): %s\n' "$SHIM"
-    case ":$PATH:" in
+    check_shim
+    OLD_CURRENT=$(readlink "$DATA_DIR/current" 2>/dev/null || true)
+    ln -s "bin/$BIN_TAG" "$STAGING/current"
+    atomic_link "$STAGING/current"
+    if ! mv -f "$SHIM_TMP" "$SHIM"; then
+        if [ -n "$OLD_CURRENT" ]; then ln -s "$OLD_CURRENT" "$STAGING/rollback"; atomic_link "$STAGING/rollback";
+        else rm -f "$DATA_DIR/current"; fi
+        die 'shim installation failed; current restored'
+    fi
+    if [ "$DEV" -eq 1 ]; then printf 'Development bootstrap (local override; no release verification): %s\n' "$SHIM";
+    else printf 'Verified %s (%s); shim: %s\n' "$BIN_TAG" "$TARGET" "$SHIM"; fi
+    case ":${PATH:-}:" in
         *":$HOME/.local/bin:"*) printf 'Shim directory is on PATH.\n' ;;
-        *) printf 'Next steps: add to your shell, then start a fresh session:\nexport PATH="$HOME/.local/bin:$PATH"\n' ;;
+        *)
+            case "${SHELL:-}" in
+                */fish) printf 'Next steps (fish): fish_add_path "$HOME/.local/bin"\n' ;;
+                *) printf 'Next steps: export PATH="$HOME/.local/bin:$PATH"\n' ;;
+            esac
+            printf 'Start a fresh shell and agent session.\n' ;;
     esac
+    cleanup
+    trap - EXIT HUP INT TERM
 }
-
 if [ "${1:-}" = bootstrap ]; then
     [ "$#" -eq 1 ] || die 'usage: buzz-kit bootstrap'
     bootstrap
@@ -65,7 +169,13 @@ if [ "${1:-}" = bootstrap ]; then
 fi
 if [ -n "${BUZZ_KIT_BIN:-}" ]; then
     case "$BUZZ_KIT_BIN" in /*) ;; *) die 'BUZZ_KIT_BIN must be an absolute path' ;; esac
+    [ -f "$BUZZ_KIT_BIN" ] && [ -x "$BUZZ_KIT_BIN" ] || die 'development binary is not executable'
     exec "$BUZZ_KIT_BIN" "$@"
 fi
-[ -x "$DATA_DIR/current/buzz-kit" ] || die 'M0 has no current binary; run explicit-path bootstrap with BUZZ_KIT_BIN'
+if [ ! -e "$DATA_DIR/current" ] && [ ! -L "$DATA_DIR/current" ]; then bootstrap >&2; fi
+[ -L "$DATA_DIR/current" ] || die 'current must be a managed symlink'
+CURRENT=$(readlink "$DATA_DIR/current")
+case "$CURRENT" in bin/bin-v*|bin/dev-*) ;; *) die 'current has an unsafe target' ;; esac
+case "$CURRENT" in *..*|*/*/*) die 'current has an unsafe target' ;; esac
+check_binary "$DATA_DIR/$CURRENT"
 exec "$DATA_DIR/current/buzz-kit" "$@"

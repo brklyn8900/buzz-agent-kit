@@ -103,10 +103,10 @@ Files: `docs/security/dependency-log.md`, `Cargo.toml`, `Cargo.lock`, `rust-tool
 
 Files: `src/keystore/`, backend tests, public CLI-shape notes.
 
-- [ ] Inspect `/usr/bin/security` command help; test `security -i` only with a unique throwaway service/account and synthetic secret held in memory. Verify read-back and cleanup; no real assistant key is involved.
-- [ ] Write fake-store tests for put/get/delete/list, service denylist (`buzz-desktop` and prefix), malformed names, errors without secret echo, and secret zeroing. Write real file tests for 0700/0600, wrong owner, symlink refusal, and partial-write preservation.
-- [ ] Implement Keychain stdin command quoting with narrowly validated identifiers; secret-service stdin storage; opt-in file backend. Auto selection errors rather than silently downgrading to files.
-- [ ] Run unit suite and ignored throwaway Keychain test. Record exact output/exit without secret values. Commit `feat: add guarded platform keystores`.
+- [x] Inspect `/usr/bin/security` command help; test `security -i` only with a unique throwaway service/account and synthetic secret held in memory. Verify read-back and cleanup; no real assistant key is involved.
+- [x] Write fake-store tests for put/get/delete/list, service denylist (`buzz-desktop` and prefix), malformed names, errors without secret echo, and secret zeroing. Write real file tests for 0700/0600, wrong owner, symlink refusal, and partial-write preservation.
+- [x] Implement Keychain stdin command quoting with narrowly validated identifiers; secret-service stdin storage; opt-in file backend. Auto selection errors rather than silently downgrading to files.
+- [x] Run unit suite and ignored throwaway Keychain test. Record exact output/exit without secret values. Commit `feat: add guarded platform keystores`.
 
 ### M1.3: Assistant lifecycle, public identity, and copy-only import
 

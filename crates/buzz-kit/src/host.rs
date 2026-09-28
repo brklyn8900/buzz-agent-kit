@@ -188,3 +188,46 @@ fn parse(host: &str, plugins: &str, marketplaces: &str, home: &Path) -> Report {
     }
     report
 }
+
+/// Read only host inventories; no cache scan and no host installation changes.
+pub fn probe(name: &str, home: &Path) -> (String, Report) {
+    use std::process::{Command, Stdio};
+    let Some(executable) = crate::keystore::find_program(name) else {
+        return (
+            format!("{name} unavailable"),
+            unavailable("host CLI is unavailable"),
+        );
+    };
+    let run = |args: &[&str]| -> Option<String> {
+        let output = Command::new(&executable)
+            .args(args)
+            .stdin(Stdio::null())
+            .output()
+            .ok()?;
+        if !output.status.success() {
+            return None;
+        }
+        String::from_utf8(output.stdout).ok()
+    };
+    let version = run(&["--version"]).unwrap_or_else(|| "unknown version".into());
+    let Some((plugins, markets)) =
+        run(&["plugin", "list", "--json"]).zip(run(&["plugin", "marketplace", "list", "--json"]))
+    else {
+        return (version, unavailable("cannot query installed plugins"));
+    };
+    let result = if name == "claude" {
+        claude(&plugins, &markets)
+    } else {
+        let root = std::env::var_os("CODEX_HOME")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| home.join(".codex"));
+        codex(&plugins, &markets, &root)
+    };
+    (version, result)
+}
+pub fn installed(home: &Path) -> Vec<Candidate> {
+    ["claude", "codex"]
+        .into_iter()
+        .flat_map(|host| probe(host, home).1.candidates)
+        .collect()
+}

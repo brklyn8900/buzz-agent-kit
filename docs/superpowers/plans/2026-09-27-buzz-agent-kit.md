@@ -182,10 +182,10 @@ Files: `bin/buzz-kit`, `tests/launcher.sh`, `release/checksums.txt`.
 
 Files: `src/update.rs`, host/launcher integration tests.
 
-- [ ] Write plugin-list-driven upgrade tests, obsolete higher cache ignored, manifest mismatch unavailable, highest enabled semantic version across hosts, no candidates and already-current outcomes.
-- [ ] Write rollback integrity, pin-before-any-mutation, byte-identical refused update, explicit unpin, failure preservation, current/pin/two-recent preservation and no-prune tests.
-- [ ] Implement explicit candidate launcher bootstrap, safe version components and pruning only after success. Doctor reports newer offered binaries and current/pin.
-- [ ] Run Rust/shell suites; commit `feat: add explicit updates rollback and pinning`.
+- [x] Write plugin-list-driven upgrade tests, obsolete higher cache ignored, manifest mismatch unavailable, highest enabled semantic version across hosts, no candidates and already-current outcomes.
+- [x] Write rollback integrity, pin-before-any-mutation, byte-identical refused update, explicit unpin, failure preservation, current/pin/two-recent preservation and no-prune tests.
+- [x] Implement explicit candidate launcher bootstrap, safe version components and pruning only after success. Doctor reports newer offered binaries and current/pin.
+- [x] Run Rust/shell suites; commit `feat: add explicit updates rollback and pinning`.
 
 ### M2.7: Pinned Linux Buzz CLI installer
 

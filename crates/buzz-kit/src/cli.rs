@@ -21,6 +21,15 @@ pub struct Cli {
 pub enum Command {
     /// Check local setup and server access.
     Doctor,
+    /// Explicitly update, roll back, or release a persistent binary pin.
+    Update {
+        #[arg(long)]
+        to: Option<String>,
+        #[arg(long)]
+        unpin: bool,
+        #[arg(long)]
+        no_prune: bool,
+    },
     /// Configure this project and merge pinned teammate plugin settings.
     Init {
         #[arg(long)]

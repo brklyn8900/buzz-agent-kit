@@ -39,6 +39,28 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
         .collect();
     let home = std::env::var_os("HOME").ok_or_else(|| anyhow::anyhow!("HOME is required"))?;
     let home = Path::new(&home);
+    if let Command::Update {
+        to,
+        unpin,
+        no_prune,
+    } = &cli.command
+    {
+        let options = buzz_kit::update::Options {
+            to: to.clone(),
+            unpin: *unpin,
+            no_prune: *no_prune,
+        };
+        let message =
+            buzz_kit::update::run(home, &buzz_kit::update::data_dir(home), &options, || {
+                Ok(buzz_kit::host::installed(home))
+            })?;
+        if cli.json {
+            println!("{}", serde_json::json!({"message":message}));
+        } else {
+            println!("{message}");
+        }
+        return Ok(());
+    }
     let flags = config::Flags {
         assistant: cli.assistant.clone(),
         relay: cli.relay.clone(),
@@ -60,7 +82,7 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
     }
     let config = config::load(home, &std::env::current_dir()?, &flags, &env)?;
     match &cli.command {
-        Command::Doctor => unreachable!(),
+        Command::Doctor | Command::Update { .. } => unreachable!(),
         Command::Init {
             channel,
             no_verify,

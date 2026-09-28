@@ -4,10 +4,7 @@ use crate::{
     host, identity, keystore,
 };
 use serde::Serialize;
-use std::{
-    path::{Path, PathBuf},
-    process::{Command, Stdio},
-};
+use std::path::{Path, PathBuf};
 
 #[derive(Serialize)]
 pub struct Check {
@@ -211,8 +208,21 @@ pub fn run(home: &Path, cwd: &Path, flags: &Flags, env: &Env) -> Report {
             "no binary pin"
         },
     );
-    host_status(&mut report, "claude", home);
-    host_status(&mut report, "codex", home);
+    let mut candidates = host_status(&mut report, "claude", home);
+    candidates.extend(host_status(&mut report, "codex", home));
+    match crate::update::newer_offer(&data, candidates) {
+        Ok(Some(tag)) => report.add(
+            "update",
+            "warning",
+            format!("installed plugin offers {tag}; run buzz-kit update"),
+        ),
+        Ok(None) => report.add("update", "pass", "no newer unpinned binary offered"),
+        Err(_) => report.add(
+            "update",
+            "warning",
+            "cannot compare an installed release; install a published plugin tag",
+        ),
+    }
     let bin = home.join(".local/bin");
     let on_path =
         std::env::var_os("PATH").is_some_and(|p| std::env::split_paths(&p).any(|p| p == bin));
@@ -228,49 +238,15 @@ pub fn run(home: &Path, cwd: &Path, flags: &Flags, env: &Env) -> Report {
     report.ok = !report.checks.iter().any(|c| c.status == "fail");
     report
 }
-fn host_status(report: &mut Report, name: &str, home: &Path) {
-    let Some(executable) = keystore::find_program(name) else {
-        report.add(name, "warning", "host CLI is unavailable");
-        return;
-    };
-    let run = |args: &[&str]| -> Option<String> {
-        let output = Command::new(&executable)
-            .args(args)
-            .stdin(Stdio::null())
-            .output()
-            .ok()?;
-        if !output.status.success() {
-            return None;
-        }
-        String::from_utf8(output.stdout).ok()
-    };
-    let version = run(&["--version"]).unwrap_or_else(|| "unknown version".into());
-    let Some((plugins, markets)) =
-        run(&["plugin", "list", "--json"]).zip(run(&["plugin", "marketplace", "list", "--json"]))
-    else {
-        report.add(
-            name,
-            "warning",
-            format!("{}: cannot query installed plugins", version.trim()),
-        );
-        return;
-    };
-    let result = if name == "claude" {
-        host::claude(&plugins, &markets)
-    } else {
-        let root = std::env::var_os("CODEX_HOME")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| home.join(".codex"));
-        host::codex(&plugins, &markets, &root)
-    };
-    let status = if result.candidates.is_empty() {
-        "warning"
-    } else {
-        "pass"
-    };
+fn host_status(report: &mut Report, name: &str, home: &Path) -> Vec<host::Candidate> {
+    let (version, result) = host::probe(name, home);
     report.add(
         name,
-        status,
+        if result.candidates.is_empty() {
+            "warning"
+        } else {
+            "pass"
+        },
         format!(
             "{}: {} verified candidate(s); {}",
             version.trim(),
@@ -278,4 +254,5 @@ fn host_status(report: &mut Report, name: &str, home: &Path) {
             result.notices.join("; ")
         ),
     );
+    result.candidates
 }

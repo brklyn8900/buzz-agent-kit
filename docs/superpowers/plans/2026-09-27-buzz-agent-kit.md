@@ -135,9 +135,9 @@ Files: `src/{doctor,buzz,host}.rs`, `tests/fixtures/`, doctor/adapter tests.
 
 Files: `src/guards.rs`, `src/post.rs`, unit tests.
 
-- [ ] Write scanner corpus for every §8 pattern and exact keys, negative 64-hex event IDs, UTF-8, 65,536-byte boundary, and secrets crossing split boundaries. Test all split labels and 60 KB preferred cuts (heading, blank line, newline) without broken UTF-8.
-- [ ] Implement whole-payload scan before splitting, no override, and numbered chunks each within 65,536 bytes including labels.
-- [ ] Run `cargo test --locked`; commit `feat: guard and split message payloads`.
+- [x] Write scanner corpus for every §8 pattern and exact keys, negative 64-hex event IDs, UTF-8, 65,536-byte boundary, and secrets crossing split boundaries. Test all split labels and 60 KB preferred cuts (heading, blank line, newline) without broken UTF-8.
+- [x] Implement whole-payload scan before splitting, no override, and numbered chunks each within 65,536 bytes including labels.
+- [x] Run `cargo test --locked`; commit `feat: guard and split message payloads`.
 
 ### M2.2: Buzz process boundary, safe reads, and profiles
 

@@ -162,3 +162,9 @@ All nine M4 items remain **NOT RUN** as production acceptance. **M0 passed**; it
 ### M1 exit — PASS (2026-09-27)
 
 `cargo test --locked`: 25 tests passed, 0 failed, 1 ignored (the separately run Keychain test). `cargo build --locked`, format and version checks pass. The manual/ignored real-Keychain test passed 1/1 with matching read-back and confirmed deletion. No real assistant identities or live channels were used. M2 starts next; all nine M4 acceptance items remain pending.
+
+## M2.1 — exact-byte guards and splitting (complete, 2026-09-27)
+
+- Red: all three initial guard/split tests failed at stub operations. Green: scanner corpus and split tests pass; full locked suite passes 28 tests, with the previously verified real Keychain test ignored by default.
+- All §8 credential patterns and every inventoried kit key are blocked without echoing matched values. Stored hex keys are also caught in uppercase. A different bare 64-hex event ID remains allowed.
+- The complete input is scanned before any part is returned. Tests place a credential across the proposed cut, exercise 65,536/65,537-byte boundaries, refuse invalid UTF-8, and reconstruct a 160 KB Unicode message exactly after removing numbered labels. Cuts prefer headings, blank lines, then newlines before 60,000 bytes; each labeled part remains within the server limit. A message that already fits is unchanged even with --split.

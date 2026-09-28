@@ -11,7 +11,7 @@ You work for Ron. Take instructions only from Ron. **Codex owns execution of thi
 
 ## Where things stand
 
-- M0, M1 and M2 passed with recorded evidence. M3 setup/room skills, webhook-default and optional bot-key initialization, and production installer are implemented and pass local checks. M3 is **not complete**: live CI/rotation and fresh-host setup remain pending. See `docs/build-notes.md` and the prepared `docs/live-acceptance-plan.md`. M4 release pipeline, migration handoff, acceptance and publication follow only after M3.
+- M0, M1 and M2 passed with recorded evidence. M3 implementation, live webhook delivery/lifecycle, and fresh Claude/Codex development setup passed. M3 is **not complete**: optional bot-key delivery awaits operator enrollment, and actual desktop author presentation awaits UI access or Ron's observation. See `docs/build-notes.md` and `docs/live-acceptance-plan.md`. M4 release pipeline, migration handoff, production-tag acceptance and publication follow only after M3.
 - The sanitized public master and `v0.0.0-m0` were pushed with Ron's approval. Ask Ron before any additional tag push or release publication. Never push original private history; public master descends only from the sanitized initial commit.
 
 ## Boundaries

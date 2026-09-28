@@ -1,6 +1,6 @@
 # Prepared live acceptance scope
 
-Status: authorized and in progress. Default webhook PR-opened/merged delivery and disposable workflow lifecycle checks passed on 2026-09-28. Optional bot membership, desktop presentation and fresh-session acceptance remain pending; see build notes.
+Status: authorized and in progress. Default webhook PR-opened/merged delivery, disposable workflow lifecycle, and fresh Claude/Codex development setup checks passed on 2026-09-28. Optional bot membership/delivery and desktop presentation remain pending; see build notes. Release-tag installation remains M4.
 
 ## Isolated GitHub destination
 
@@ -18,7 +18,7 @@ Use the already approved private scratch channel, configured only in an external
 - Codex: existing approved R2D2 kit copy; legacy remains untouched.
 - Claude: authorized copy-only `assistant import --legacy koinosbuzz-assistant/c3po --as c3po` passed, including repeated read-back verification. The legacy source remains untouched. This does not edit deployment callers or authorize cleanup-legacy.
 - Optional CI bot: authorized creation of `buzz-kit-ci-test` in the kit Keychain service and stdin-only export to the private test repo passed. Operator enrollment is pending. Deletion of this temporary local test key after its test is authorized. Show only the public hex/npub for operator enrollment. Do not reuse a human or runtime assistant key as the CI bot.
-- Use isolated host configuration and a temporary project for fresh Claude/Codex setup walkthroughs. The current implementation can be exercised as explicit local development; completed release-tag installation remains the M4 RC/release gate. Never present a development walkthrough as published-release proof.
+- Use isolated host configuration and a temporary project for fresh Claude/Codex setup walkthroughs. Actual testing found that replacing HOME hides the enrolled macOS Keychain entries (and native Claude sign-in). Keep the real account HOME for Keychain/authentication, isolate Codex's plugin directory and Claude's setting sources/inline plugin, and use private temporary projects. The current implementation can be exercised as explicit local development; completed release-tag installation remains the M4 RC/release gate. Never present a development walkthrough as published-release proof.
 
 ## Gates still outside this authorization
 

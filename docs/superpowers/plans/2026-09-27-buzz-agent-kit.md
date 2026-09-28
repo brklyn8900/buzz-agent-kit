@@ -221,7 +221,10 @@ Approved change: spec commit `0e44110`; do not implement the superseded bot-key-
 - [x] Write event-matrix tests for PR open/reopen/ready/merged/closed, issue open/closed, release published and failed CI only. Malicious titles remain data through env and `jq -n --arg`; payload is flat JSON; `curl --fail-with-body`; no third-party Actions, default permissions empty, and missing fork secrets skip safely.
 - [x] Implement `ci-bot init --mode webhook|bot-key`, default webhook. Create the Buzz webhook workflow in the configured project channel as the active assistant; parse/redact the nested secret; set BUZZ_WEBHOOK_SECRET and BUZZ_WEBHOOK_URL; write the default template. Track public workflow metadata for doctor visibility warnings without storing the secret.
 - [x] Implement optional named bot-key mode with the separately vetted .deb template, stdin-only key export, relay/channel variables, operator membership/channel steps and local-key deletion offer. Do not require .deb download, bot identity or membership setup for webhook mode.
-- [ ] Verify §14 secret rotation behavior using an explicitly authorized disposable scratch workflow; document results and relay-authored message display. Keep ci-bot rotate out of scope unless approved after findings. Document owner-membership dependency and why built-in GitHub webhooks are unsupported.
+- [x] Verify §14 secret rotation behavior using an explicitly authorized disposable scratch workflow. Observed: update preserves the secret; wrong secret 401, valid secret 202, deletion 404. Document owner-membership dependency and why built-in GitHub webhooks are unsupported. Keep ci-bot rotate out of scope unless separately approved.
+- [ ] Record actual Buzz Desktop author presentation. Signed relay authorship is verified; UI access was denied, so display-name observation awaits access or Ron's report.
+- [x] Run real webhook PR-opened and merged delivery checks with read-back author/content evidence.
+- [ ] Finish optional bot-key PR-opened delivery after the operator enrolls the authorized temporary bot and adds it to the scratch channel.
 - [x] Run local suite; commit `feat: initialize webhook and optional bot-key notifications`. Real workflow creation/GitHub secret writes use their explicit authorized test scope; persistent Keychain writes retain Ron's gate.
 
 ### M3.3: Production installer and fresh setup walkthrough
@@ -230,7 +233,7 @@ Files: `install.sh`, `tests/installer.sh`, docs evidence.
 
 - [x] Extend M0 installer tests for Claude-only/Codex-only/both/neither, tag/ref agreement, dry-run, all collision types, marketplace backup/preservation, host failure, absolute doctor, and missing PATH as warning.
 - [x] Replace M0 assumptions with real verified bootstrap and production doctor. Finish with distinct Installed/Next steps and fresh-session instructions; never edit shell rc files.
-- [ ] Run authorized tag installation and fresh setup skill in both hosts. Record missing human/operator steps honestly and complete them before claiming the walkthrough passed.
+- [x] Run fresh setup skill walkthroughs in both hosts against the current development binary, with actual identity, membership and channel doctor checks. M0 already proved tagged host discovery. Current production-artifact tag installation remains M4 acceptance 1/7/8/9, after release artifacts exist; do not represent development evidence as release evidence.
 - [x] Run all local suites and plugin validation; commit `feat: complete verified dual-host installation`.
 
 **M3 exit:** Fresh-session setup walkthrough succeeds in Claude and Codex with real doctor evidence.

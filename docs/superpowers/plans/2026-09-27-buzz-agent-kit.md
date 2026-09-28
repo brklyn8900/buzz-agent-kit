@@ -156,9 +156,9 @@ Files: `src/post.rs`, payload integration tests, build notes.
 
 - [x] Write stdin-capture tests proving checked bytes equal sent bytes and no file path/--file argument reaches Buzz. Cover stream 9, forum root 45001/reply 45003, explicit kind, first split root, supplied thread root and later-part failure.
 - [x] Implement post, preserving returned event IDs and surfacing partial-send information without automatic duplication/retry.
-- [ ] Ask Ron for a private scratch channel UUID and permission for required persistent assistant-key creation/import. Keep those inputs outside repo/logs. Verify membership before the first post.
-- [ ] Post a synthetic claim and reply only in the scratch thread; read back and verify public author and root/reply relationships. Record sanitized evidence, not channel UUID/server address or private content.
-- [x] Run suite and commit guarded posting implementation; live gate remains pending.
+- [x] Ask Ron for a private scratch channel UUID and permission for required persistent assistant-key creation/import. Keep those inputs outside repo/logs. Verify membership before the first post.
+- [x] Post a synthetic claim and reply only in the scratch thread; read back and verify public author and root/reply relationships. Record sanitized evidence, not channel UUID/server address or private content.
+- [x] Run suite and commit guarded posting implementation; live author/thread gate now passed (see build notes).
 
 ### M2.4: Project init and merge-only teammate settings
 
@@ -191,7 +191,7 @@ Files: `src/update.rs`, host/launcher integration tests.
 
 Files: `src/install_buzz.rs`, artifact dependency-log entry and tests.
 
-- [ ] Vet exact official desktop .deb asset/hash and installed extraction tools; obtain dependency approval. Never copy an old background checksum without current official verification.
+- [ ] Vet exact official desktop .deb asset/hash and installed extraction tools for install-buzz-cli and optional bot-key CI mode; obtain dependency approval. The default webhook notifier has no .deb dependency. Never copy an old background checksum without current official verification.
 - [ ] Write tests for checksum refusal, architecture support, extraction-only usr/bin/buzz, install location and discovery precedence; macOS existing-app guidance.
 - [ ] Implement pinned artifact installation without package-manager/root operations. Run suite; commit `feat: install checksum-pinned Buzz CLI on Linux`.
 
@@ -204,19 +204,25 @@ Files: `src/install_buzz.rs`, artifact dependency-log entry and tests.
 Files: both skills, `templates/{buzz.config.example.json,AGENTS.snippet.md}`, `docs/{collaboration,operators}.md`, README, LICENSE.
 
 - [ ] Write frontmatter/packaging checks for name/folder/length and forbidden hook/MCP references. Check templates contain only generic values.
-- [ ] Replace M0 placeholder with setup's ordered doctor/fix flow, public identity handoff, profile, runtime config, init, channel display-name/hex guidance and optional CI bot. Never request a private key.
+- [ ] Replace M0 placeholder with setup's ordered doctor/fix flow, public identity handoff, profile, runtime config, init, channel display-name/hex guidance and optional webhook-default CI notification setup (bot-key is an explicit alternative). Never request a private key or webhook secret pasted into chat.
 - [ ] Implement room skill with untrusted-channel boundary, read/search/claim/thread/change-only updates, ask/status/off, five templates, no attachments, no broadcast and size limits.
 - [ ] Document all operator caveats from §10; manual pinned installs and DO_NOT_TRACK=1 skills-only fallback limitations; Apache-2.0 license.
 - [ ] Validate manifests/skills and inspect rendered docs; commit `docs: add setup room and operator workflows`.
 
-### M3.2: CI bot initialization and notifier template
+### M3.2: Webhook-default CI initialization and optional bot-key mode
 
-Files: `src/ci_bot.rs`, `templates/github/buzz-notify.yml`, tests.
+Files: `src/ci_bot.rs`, `src/doctor.rs`, `templates/github/buzz-notify.yml`, `templates/github/buzz-notify.bot-key.yml`, tests, operator docs.
 
-- [ ] Inspect actual `gh secret set --help` and variable set behavior. Write fake-process assertions: secret goes on stdin only, variables separate, template workflow name safely quoted, existing workflow not overwritten, partial failure recoverable.
-- [ ] Write event-matrix tests for PR open/reopen/ready/merged/closed, issue open/closed, release published, failed CI only; malicious titles remain data; no third-party Actions, default permissions empty and missing fork secrets skip safely.
-- [ ] Implement bot init and local-key deletion offer, generic pinned Buzz template, operator instructions. Any real Keychain/external secret write waits at its approval boundary.
-- [ ] Run suite; commit `feat: initialize CI bot and guarded GitHub notifications`.
+Approved change: spec commit `0e44110`; do not implement the superseded bot-key-only default.
+
+- [ ] Inspect actual `buzz workflows create/update/get/list --help`, real/local response shapes and `gh secret set`/variable help before coding. Add synthetic fixtures for the JSON `message` containing `response:{...}`. Secrets must stay in memory and never enter fixture output, files or errors.
+- [ ] Write red tests for default webhook selection and explicit bot-key mode. Webhook creation must use only the fixed send_message template and flat trigger fields repo/event/title/url/actor; it must not accept arbitrary workflow payloads from channel content.
+- [ ] Write fake-process tests proving the webhook secret and optional bot key go only to `gh secret set` stdin; no argv/log/file echo; URL is a separate variable; existing workflow files are preserved; partial creation/export failures report recoverable public workflow IDs without exposing secrets or silently creating duplicates.
+- [ ] Write event-matrix tests for PR open/reopen/ready/merged/closed, issue open/closed, release published and failed CI only. Malicious titles remain data through env and `jq -n --arg`; payload is flat JSON; `curl --fail-with-body`; no third-party Actions, default permissions empty, and missing fork secrets skip safely.
+- [ ] Implement `ci-bot init --mode webhook|bot-key`, default webhook. Create the Buzz webhook workflow in the configured project channel as the active assistant; parse/redact the nested secret; set BUZZ_WEBHOOK_SECRET and BUZZ_WEBHOOK_URL; write the default template. Track public workflow metadata for doctor visibility warnings without storing the secret.
+- [ ] Implement optional named bot-key mode with the separately vetted .deb template, stdin-only key export, relay/channel variables, operator membership/channel steps and local-key deletion offer. Do not require .deb download, bot identity or membership setup for webhook mode.
+- [ ] Verify §14 secret rotation behavior using an explicitly authorized disposable scratch workflow; document results and relay-authored message display. Keep ci-bot rotate out of scope unless approved after findings. Document owner-membership dependency and why built-in GitHub webhooks are unsupported.
+- [ ] Run suite; commit `feat: initialize webhook and optional bot-key notifications`. Real workflow creation/GitHub secret writes use their explicit authorized test scope; persistent Keychain writes retain Ron's gate.
 
 ### M3.3: Production installer and fresh setup walkthrough
 
@@ -268,7 +274,7 @@ Files: `docs/acceptance.md`, sanitized fixture/project templates.
 - [ ] Acceptance 2: ordered import/caller handoff/reverification/cleanup plus green doctors, using M4.3 evidence.
 - [ ] Acceptance 3: scratch claim + reply with server-confirmed author and threading.
 - [ ] Acceptance 4: throwaway HOME on a Linux machine, file-store permissions, actual pinned CLI installation and green doctor. Obtain machine access through Ron if unavailable; no root SSH/live server changes.
-- [ ] Acceptance 5: authorized disposable test repo and scratch-only notifier, actual opened and merged PR events producing verified messages; do not post in other channels.
+- [ ] Acceptance 5: authorized disposable test repo and scratch-only default webhook notifier; actual PR-opened and merged messages, wrong-secret request rejected, plus one PR-opened message in optional bot-key mode. Verify authorship appropriate to each mode; never post in other channels.
 - [ ] Acceptance 6: fresh project clone/workspace trust in Claude, then VS Code/Copilot first chat; record actual pinned recommendation/install prompts. Human UI evidence is required where automation cannot observe it.
 - [ ] Acceptance 7: clean user environment with no cache/shim/local-bin/PATH entry, different cwd invocation; actual Installed and green doctor with PATH warning; after printed PATH added by user, fresh shell and both hosts succeed.
 - [ ] Acceptance 8: Codex-only account rc1 → rc2 marketplace upgrade/reinstall → newer-version doctor → update via derived adapter → pin refusal with unchanged current.

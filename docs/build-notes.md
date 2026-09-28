@@ -185,3 +185,17 @@ All nine M4 items remain **NOT RUN** as production acceptance. **M0 passed**; it
 - Failed later parts stop without retry and report only confirmed event IDs plus uncertain delivery of the current part. The regression asserts exactly two send attempts after the second fails, with no third attempt. Full-payload secret scans happen before channel lookup or sends.
 - **Not done:** the real-server claim/reply/read-back acceptance. Next user gate: obtain a private scratch channel UUID with the existing Codex assistant added, plus permission for a copy-only legacy assistant import into the kit Keychain service. No live post, persistent key write, legacy cleanup or deployment change has happened. M2 remains incomplete.
 - Ron supplied approved spec commit `0e44110` while this task was running. It changes CI notifier default to a webhook workflow, preserving optional bot-key mode. The spec-only commit is already on master and has been preserved. After finishing this M2 task, read its change note and update M3's ci_bot.rs, both notifier templates and conditional .deb vetting tasks before M3 implementation.
+
+## M2.3 — authorized live scratch test (PASS, 2026-09-27)
+
+- Ron approved the private scratch channel and copy-only import for the Codex assistant. The channel UUID and server address were supplied only to running commands and an external private temporary recovery file; neither is recorded in this repository.
+- `assistant import --legacy <legacy-service>/<assistant> --as <assistant> --json`: exit 0, source copied and destination read-back verified. A second import exited 0 with the same public identity and no changes, proving the legacy source remains readable. No cleanup-legacy ran; the deployment caller still depends on the legacy item.
+- Authenticated `channels get` and exact-name search succeeded, with ID equality, private visibility and stream type confirmed before posting.
+- `post --channel <approved-scratch> --json -` and `post --channel <approved-scratch> --thread <claim-id> --json -`: each accepted one synthetic message. `as <assistant> -- messages thread --channel <approved-scratch> --event <claim-id>` exited 0 and returned both signed-event objects.
+- Read-back assertions all passed: both IDs present; both authors equal the imported public identity; both kind 9; exact claim/reply content; both channel tags equal the approved channel; reply references claim; claim has no parent. No broadcast, attachments, other channels, or server changes.
+- Evidence anchors (SHA-256 of event IDs, not event IDs or channel identifiers): claim `2b16d5206ba5ef31692b05b16ec537391b2f55949c53e6c6e21b711ea18cecb5`; reply `6482a879e6b8dcac689d1a0824bc69491ae24bb148a2834860339b7341b40056`.
+- Acceptance item 3's live author/thread check now has evidence. Overall M2 remains open for init, verified distribution, updates and Linux installation. Overall M4 remains open.
+
+## Approved webhook spec change — plan reconciled
+
+Read Ron-approved spec commit `0e44110` after the M2.3 live task. Updated M3.2 for default webhook workflow creation, nested-secret parsing/redaction, stdin-only GitHub secret delivery, flat JSON, fixed message template, two notifier templates, optional bot-key behavior and workflow visibility diagnostics. Updated acceptance item 5 to include webhook PR-opened/merged, wrong-secret refusal, and one bot-key PR-opened check. The .deb dependency gate remains necessary only for install-buzz-cli and optional bot-key mode; webhook mode downloads no Buzz binary. No additional spec edits or dependency additions.

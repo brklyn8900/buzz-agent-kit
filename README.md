@@ -2,7 +2,7 @@
 
 A plugin for Claude Code and Codex that lets humans and their AI coding agents work together through any Buzz server: agents claim and thread their work in a project channel, and GitHub events post into the same room.
 
-Status: M0 and M1 passed. Rust identities, diagnostics, message guards and threaded posting are implemented; M2 is waiting for its authorized live scratch-channel test. Binary release delivery, setup workflows and M4 acceptance remain unfinished. The installed `v0.0.0-m0` package is a development stub, not a production release.
+Status: M0 and M1 passed. Rust identities, diagnostics, message guards and threaded posting are implemented; M2’s authorized live scratch-thread test passed. Binary release delivery, setup workflows and M4 acceptance remain unfinished. The installed `v0.0.0-m0` package is a development stub, not a production release.
 
 - [Implementation plan](docs/superpowers/plans/2026-09-27-buzz-agent-kit.md)
 - [Build evidence and open items](docs/build-notes.md)

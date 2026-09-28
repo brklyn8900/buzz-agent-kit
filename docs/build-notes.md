@@ -222,3 +222,10 @@ Read Ron-approved spec commit `0e44110` after the M2.3 live task. Updated M3.2 f
 - Test-first limitation: the initial update test run stopped at a compile error in digest formatting, rather than assertion failures at stubs. The later malformed-current regression did fail: a successful launcher pointing outside the cache bypassed restoration. Fixed it and verified restoration of the original current symlink.
 - Green: `cargo test --locked` passes 48 tests, zero failed, one ignored (the separately verified real-Keychain test). `cargo build --locked`, format checks, launcher shell suite and whitespace checks pass. These are local fixtures, not the pending real two-release RC acceptance.
 - No host cache scanning, new dependencies, real release downloads, or tag pushes. M2.7 still requires Linux artifact vetting and approval; M2 exit remains pending.
+
+## M2.7 — Linux dependency vetting (approval pending, 2026-09-27)
+
+- Statically inspected the official Desktop 0.5.25 x86_64 .deb and verified its GitHub-published SHA-256. Extracted CLI is a regular x86_64 ELF; no package maintainer scripts. Existing ar/tar suffice. No downloaded executable was run or installed. Full evidence and exact hashes are in docs/security/dependency-log.md.
+- Findings: no ARM64 Linux artifact; glibc 2.38 required; no GitHub attestation (HTTP 404); upstream release is mutable and its build does not use --locked. Conservative source-lock OSV scan found two advisories: aarch64-only cmov correctness issue and instant unmaintained notice. Kit's own cmov is already the fixed 0.5.4.
+- Plan updated with explicit architecture/libc checks and system extraction tools. Recommend this exact x86_64 artifact with the recorded limitations; await Ron's dependency approval before implementing its pin or installing it. Default webhook mode has no dependency on this artifact. No spec decisions changed.
+- Current gates: M0 and M1 passed; M2.1–M2.6 passed, M2.7 pending dependency approval and implementation. M3/M4 and publication remain pending. Authorized live import/post proof is complete; legacy cleanup remains gated on the deployment handoff and re-verification.

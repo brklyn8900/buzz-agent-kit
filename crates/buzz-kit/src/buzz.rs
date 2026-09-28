@@ -35,6 +35,45 @@ pub struct Channel {
     pub name: String,
 }
 
+pub fn validate_read(args: &[String]) -> Result<()> {
+    ensure!(
+        args.len() >= 2,
+        "as requires an allowlisted read command and subcommand"
+    );
+    for arg in args {
+        let option = arg.split('=').next().unwrap_or(arg);
+        ensure!(
+            !matches!(
+                option,
+                "--broadcast"
+                    | "--private-key"
+                    | "--auth-tag"
+                    | "--relay"
+                    | "--format"
+                    | "--help"
+                    | "-h"
+                    | "--version"
+            ),
+            "passthrough cannot broadcast, change identity/relay/output settings, or request help"
+        );
+    }
+    let allowed = matches!(
+        (args[0].as_str(), args[1].as_str()),
+        ("channels", "list" | "get" | "search" | "members")
+            | ("messages", "get" | "thread" | "search")
+            | ("users", "get" | "presence")
+            | ("canvas", "get" | "history")
+            | ("repos", "get" | "list")
+            | ("feed", "get")
+            | ("dms", "list")
+    );
+    ensure!(
+        allowed,
+        "as only supports read commands; use guarded post or assistant profile for writes"
+    );
+    Ok(())
+}
+
 pub fn discover(env: &Env, home: &Path) -> Result<PathBuf> {
     let candidate = if let Some(path) = env.get("BUZZ_KIT_BUZZ_CLI") {
         PathBuf::from(path)
@@ -60,6 +99,47 @@ pub fn discover(env: &Env, home: &Path) -> Result<PathBuf> {
     Ok(candidate)
 }
 impl Buzz {
+    pub fn read(&self, args: &[String], secret: &Secret) -> Result<serde_json::Value> {
+        validate_read(args)?;
+        self.read_json(&args.iter().map(String::as_str).collect::<Vec<_>>(), secret)
+    }
+    pub fn profile(
+        &self,
+        profile: &crate::cli::Profile,
+        scanner: &crate::guards::Scanner,
+        secret: &Secret,
+    ) -> Result<serde_json::Value> {
+        let mut args = vec!["users".to_owned(), "set-profile".to_owned()];
+        for (flag, value) in [
+            ("--name", &profile.profile_name),
+            ("--about", &profile.about),
+            ("--avatar", &profile.avatar),
+        ] {
+            if let Some(value) = value {
+                scanner.check(value.as_bytes())?;
+                if value.starts_with('-') {
+                    args.push(format!("{flag}={value}"));
+                } else {
+                    args.extend([flag.to_owned(), value.clone()]);
+                }
+            }
+        }
+        ensure!(args.len() > 2, "provide at least one profile field");
+        let payload = serde_json::to_vec(
+            &serde_json::json!({"name":profile.profile_name,"about":profile.about,"picture":profile.avatar}),
+        )?;
+        ensure!(
+            payload.len() <= crate::post::MAX_BYTES,
+            "profile fields exceed 65,536 bytes"
+        );
+        let response =
+            self.read_json(&args.iter().map(String::as_str).collect::<Vec<_>>(), secret)?;
+        ensure!(
+            response["accepted"].as_bool() == Some(true),
+            "profile was not accepted by the relay"
+        );
+        Ok(response)
+    }
     pub(crate) fn read_json(&self, args: &[&str], secret: &Secret) -> Result<serde_json::Value> {
         let relay = config::normalize_relay(&self.relay)?;
         let output = Command::new(&self.executable)

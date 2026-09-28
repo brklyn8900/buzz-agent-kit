@@ -143,10 +143,10 @@ Files: `src/guards.rs`, `src/post.rs`, unit tests.
 
 Files: `src/buzz.rs`, `src/assistant.rs`, passthrough/profile integration tests.
 
-- [ ] Inspect installed `buzz messages {get,thread,search,send} --help`, channel read commands and `users set-profile --help`; verify real JSON/error shapes at the authorized live gate.
-- [ ] Write tests for every allowed read pair and refusal of write/upload/edit/delete/unknown pairs, broadcast anywhere, and attempts to override private-key/relay identity through passthrough options. Child args never contain a key.
-- [ ] Implement read/search/as and guarded profile fields using one subprocess boundary. Inject key only in child environment; sanitize inherited auth variables and errors. Preserve safe CLI stdout and exits.
-- [ ] Run the suite; commit `feat: add read-only Buzz passthrough and guarded profiles`.
+- [x] Inspect installed `buzz messages {get,thread,search,send} --help`, channel read commands and `users set-profile --help`; verify local synthetic JSON/error shapes now; real-server verification remains at M2.3’s authorized live gate.
+- [x] Write tests for every allowed read pair and refusal of write/upload/edit/delete/unknown pairs, broadcast anywhere, and attempts to override private-key/relay identity through passthrough options. Child args never contain a key.
+- [x] Implement read/search/as and guarded profile fields using one subprocess boundary. Inject key only in child environment; sanitize inherited auth variables and errors. Preserve safe CLI stdout and exits.
+- [x] Run the suite; commit `feat: add read-only Buzz passthrough and guarded profiles`.
 
 ### M2.3: Posting, thread kinds, and live smoke
 

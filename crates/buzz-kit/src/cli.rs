@@ -1,4 +1,4 @@
-use clap::{Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 use std::path::PathBuf;
 
 #[derive(Parser)]
@@ -21,6 +21,24 @@ pub struct Cli {
 pub enum Command {
     /// Check local setup and server access.
     Doctor,
+    /// Read channel messages or a thread.
+    Read {
+        #[arg(long)]
+        limit: Option<u32>,
+        #[arg(long)]
+        thread: Option<String>,
+    },
+    Search {
+        query: String,
+        #[arg(long)]
+        author: Option<String>,
+    },
+    /// Run an allowlisted read command with this assistant's identity.
+    As {
+        name: String,
+        #[arg(last = true, required = true)]
+        args: Vec<String>,
+    },
     /// Manage assistant identities; private keys are never printed.
     Assistant {
         #[command(subcommand)]
@@ -32,6 +50,13 @@ pub enum Command {
 pub enum AssistantCommand {
     New {
         name: String,
+        #[command(flatten)]
+        profile: Profile,
+    },
+    Profile {
+        name: String,
+        #[command(flatten)]
+        profile: Profile,
     },
     List,
     Show {
@@ -53,6 +78,17 @@ pub enum AssistantCommand {
         #[arg(long)]
         yes: bool,
     },
+}
+
+#[derive(Args, Clone, Default)]
+#[group(id = "profile-fields")]
+pub struct Profile {
+    #[arg(long)]
+    pub profile_name: Option<String>,
+    #[arg(long)]
+    pub about: Option<String>,
+    #[arg(long)]
+    pub avatar: Option<String>,
 }
 
 #[cfg(test)]

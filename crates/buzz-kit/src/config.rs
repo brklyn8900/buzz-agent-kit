@@ -58,7 +58,17 @@ pub struct Config {
 pub type Env = BTreeMap<String, String>;
 /// --config (or BUZZ_KIT_CONFIG) selects project configuration, not credentials.
 pub fn load(home: &Path, cwd: &Path, flags: &Flags, env: &Env) -> Result<Config> {
-    let personal = read_json(&home.join(".config/buzz-kit/config.json"), false)?;
+    resolve(
+        load_personal(home)?,
+        load_project(cwd, flags, env)?,
+        flags,
+        env,
+    )
+}
+pub fn load_personal(home: &Path) -> Result<Personal> {
+    read_json(&home.join(".config/buzz-kit/config.json"), false)
+}
+pub fn load_project(cwd: &Path, flags: &Flags, env: &Env) -> Result<Project> {
     let explicit = flags
         .config
         .clone()
@@ -78,7 +88,7 @@ pub fn load(home: &Path, cwd: &Path, flags: &Flags, env: &Env) -> Result<Config>
         Some((path, required)) => read_json(&path, required)?,
         None => Project::default(),
     };
-    resolve(personal, project, flags, env)
+    Ok(project)
 }
 
 fn read_json<T: serde::de::DeserializeOwned + Default>(path: &Path, required: bool) -> Result<T> {

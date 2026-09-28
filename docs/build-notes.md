@@ -149,3 +149,16 @@ All nine M4 items remain **NOT RUN** as production acceptance. **M0 passed**; it
 - Fake migration proofs: copy and read-back; identical destination no-op; different destination refuses with public keys only; write failure leaves source intact; corrupt read-back removes only the newly created destination; cleanup requires identical secret bytes and confirmation. Backend put owns partial-write rollback, so an import never deletes an existing entry that won a concurrent creation race.
 - Ruling: import defaults the destination name to the legacy account when no explicit `--as`/BUZZ_KIT_AS is supplied. Migration always targets Keychain, never silently exports to the optional file store. The desktop service denylist runs before helper invocation.
 - No real legacy keys read, copied, or removed. Profile writes and new-command profile options remain in the guarded M2 profile task.
+
+## M1.4 — ordered diagnostics and host adapters (complete, 2026-09-27)
+
+- Inspected the installed Buzz CLI help: HTTP(S) relay URLs; JSON errors on stderr; exit codes 0–5, with 3 = auth. `--version` is unsupported; app metadata identifies Buzz 0.5.25.
+- Executed the real CLI against a local synthetic HTTP `/query` responder with a throwaway in-memory key. `channels list`: JSON array, exit 0. `channels get --channel <synthetic UUID>`: one JSON object, exit 0. `channels search --query fixture-room --exact`: JSON array including `channel_type: forum`, exit 0. A synthetic HTTP 401 produces exit 3 and an `auth_error` JSON object. No live server contacted. Public fixtures retain shapes with the synthetic UUID replaced.
+- Finding for M2: `channels get` omits channel type in this installed CLI. `channels search` exposes it. Resolve an exact-name search then match the configured channel ID before choosing forum/stream kinds; refuse unknown types. This fulfills the spec without a spec change.
+- Red: three adapter tests failed at stub operations. Two doctor integration tests failed because doctor was unimplemented and emitted no report. Green: all adapter tests and both process-boundary doctor tests pass. Doctor emits the prescribed first nine checks, file/PATH warnings, current/pin and host status; auth exit 3 directs the human to the operator.
+- Doctor integration uses a real system curl NIP-11 request to a local synthetic server, a disposable explicit file keystore and a fake Buzz process which asserts key-in-env only and removed owner auth tag. Required checks pass; optional PATH/cache/host warnings do not turn a usable shell installation into a failure. This is not live-server acceptance.
+- Host adapters use the recorded Claude/Codex shapes and only listed/derived paths. Tests cover wrong sources, duplicate marketplaces, disabled plugins, missing fields/checksums, traversal and manifest version mismatch. No cache scan.
+
+### M1 exit — PASS (2026-09-27)
+
+`cargo test --locked`: 25 tests passed, 0 failed, 1 ignored (the separately run Keychain test). `cargo build --locked`, format and version checks pass. The manual/ignored real-Keychain test passed 1/1 with matching read-back and confirmed deletion. No real assistant identities or live channels were used. M2 starts next; all nine M4 acceptance items remain pending.

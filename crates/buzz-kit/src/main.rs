@@ -44,9 +44,23 @@ fn run(cli: &Cli) -> anyhow::Result<()> {
         relay: cli.relay.clone(),
         config: cli.config.clone(),
     };
+    if matches!(cli.command, Command::Doctor) {
+        let report = buzz_kit::doctor::run(home, &std::env::current_dir()?, &flags, &env);
+        if cli.json {
+            println!("{}", serde_json::to_string(&report)?);
+        } else {
+            for check in &report.checks {
+                println!("{} {}: {}", check.status, check.name, check.message);
+            }
+        }
+        if !report.ok {
+            std::process::exit(1);
+        }
+        return Ok(());
+    }
     let config = config::load(home, &std::env::current_dir()?, &flags, &env)?;
     match &cli.command {
-        Command::Doctor => anyhow::bail!("doctor is not implemented yet; M1 is in progress"),
+        Command::Doctor => unreachable!(),
         Command::Assistant { command } => {
             let store = keystore::open(config.backend, home)?;
             match command {

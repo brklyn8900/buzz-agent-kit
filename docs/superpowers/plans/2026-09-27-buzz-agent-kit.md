@@ -121,11 +121,11 @@ Files: `src/{identity,assistant}.rs`, `tests/assistant.rs`.
 
 Files: `src/{doctor,buzz,host}.rs`, `tests/fixtures/`, doctor/adapter tests.
 
-- [ ] Check actual Buzz help/output shapes using synthetic/local responses first and authorized read calls later. Record HTTP relay semantics, error exit codes, channel metadata and JSON wrappers. Do not infer successful server JSON from help.
-- [ ] Write ordered doctor assertions for platform, Buzz lookup order, config, NIP-11 reachability via curl, readable key, membership (exit 3), visible channel, backend, current/pin, host status, and PATH warning without failure.
-- [ ] Write host fixture tests for Claude-only/Codex-only/both; unknown/missing fields; missing marketplace source; same-name wrong repo; disabled plugin; manifest mismatch; path traversal; only listed installed locations.
-- [ ] Implement strict `Candidate { host, version, launcher, kit_dir }` / `Unavailable(reason)` adapters per observed schemas. Never scan caches; validate manifests and checksums file presence.
-- [ ] Run unit suite and all-green throwaway-config doctor where infrastructure exists; commit `feat: add ordered diagnostics and host discovery`.
+- [x] Check actual Buzz help/output shapes using synthetic/local responses first and authorized read calls later. Record HTTP relay semantics, error exit codes, channel metadata and JSON wrappers. Do not infer successful server JSON from help.
+- [x] Write ordered doctor assertions for platform, Buzz lookup order, config, NIP-11 reachability via curl, readable key, membership (exit 3), visible channel, backend, current/pin, host status, and PATH warning without failure.
+- [x] Write host fixture tests for Claude-only/Codex-only/both; unknown/missing fields; missing marketplace source; same-name wrong repo; disabled plugin; manifest mismatch; path traversal; only listed installed locations.
+- [x] Implement strict `Candidate { host, version, launcher, kit_dir }` / `Unavailable(reason)` adapters per observed schemas. Never scan caches; validate manifests and checksums file presence.
+- [x] Run unit suite and all-green throwaway-config doctor where infrastructure exists; commit `feat: add ordered diagnostics and host discovery`.
 
 **M1 exit:** Rust suite and manual throwaway Keychain test pass. Record the security stdin result for §14; propose and approve a fallback dependency if needed.
 
@@ -149,6 +149,8 @@ Files: `src/buzz.rs`, `src/assistant.rs`, passthrough/profile integration tests.
 - [ ] Run the suite; commit `feat: add read-only Buzz passthrough and guarded profiles`.
 
 ### M2.3: Posting, thread kinds, and live smoke
+
+M1 CLI finding: `channels get` omits type. Use `channels search --query <exact name> --exact`, match the configured channel ID, and consume its verified `channel_type`; unknown/missing type must not silently default to a stream.
 
 Files: `src/post.rs`, payload integration tests, build notes.
 

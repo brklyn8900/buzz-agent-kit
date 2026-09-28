@@ -1,0 +1,13 @@
+[
+  {
+    "channel_id": "<channel-id>",
+    "name": "fixture-room",
+    "channel_type": "forum",
+    "visibility": "private",
+    "archived": false,
+    "about": null,
+    "topic": null,
+    "purpose": null,
+    "ttl_seconds": null
+  }
+]

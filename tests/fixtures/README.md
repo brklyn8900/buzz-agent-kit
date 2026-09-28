@@ -8,3 +8,5 @@ Captured on 2026-09-27 using Claude Code 2.1.283 and Codex CLI 0.157.1:
 - `codex plugin marketplace list --json`
 
 Refreshed after the actual `v0.0.0-m0` tag installation into both hosts. Entries preserve the installed kit's output fields, versions and public GitHub source; home paths are anonymized. Claude's marketplace includes `ref`; Codex's installed plugin includes `marketplaceSource` but no `installPath`. Empty `available` matches the observed list. The Codex marketplace fixture also retains the earlier observed missing-source shape under a generic name so parsers cannot assume every entry supplies provenance.
+
+Buzz Desktop 0.5.25 (bundled CLI has no `--version`) channel fixtures come from actual CLI executions against a local-only synthetic HTTP `/query` responder on 2026-09-27. Channel identifiers are replaced by `<channel-id>`; all event data was synthetic. List outputs a JSON array; get outputs an object. These are parser-shape evidence, not live membership or channel acceptance.
